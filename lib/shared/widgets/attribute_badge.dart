@@ -21,7 +21,7 @@ class AttributeBadge extends StatelessWidget {
         vertical: size * 0.25,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(size * 0.5),
         border: Border.all(color: color, width: 1),
       ),

@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/storage_service.dart';
@@ -73,7 +72,7 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
             colors: [
               AppColors.background,
               (AppColors.attributeColors[widget.object.attribute] ?? AppColors.primary)
-                  .withOpacity(0.1),
+                  .withValues(alpha: 0.1),
               Colors.black,
             ],
           ),
@@ -97,8 +96,9 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
                     ),
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(Icons.share, color: AppColors.onBackground),
-                      onPressed: _shareObject,
+                      icon: const Icon(Icons.alternate_email, color: AppColors.onBackground),
+                      onPressed: _shareToX,
+                      tooltip: 'X に共有',
                     ),
                   ],
                 ),
@@ -148,7 +148,7 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
                                   boxShadow: [
                                     BoxShadow(
                                       color: (AppColors.rarityColors[widget.object.rarity] 
-                                          ?? AppColors.primary).withOpacity(0.5),
+                                          ?? AppColors.primary).withValues(alpha: 0.5),
                                       blurRadius: 20,
                                       spreadRadius: 5,
                                     ),
@@ -190,14 +190,14 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
                         width: double.infinity,
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: AppColors.surface.withOpacity(0.8),
+                          color: AppColors.surface.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: AppColors.primary.withOpacity(0.3),
+                            color: AppColors.primary.withValues(alpha: 0.3),
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.primary.withOpacity(0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               blurRadius: 10,
                               spreadRadius: 2,
                             ),
@@ -208,7 +208,7 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
                             Text(
                               '真名',
                               style: TextStyle(
-                                color: AppColors.onSurface.withOpacity(0.7),
+                                color: AppColors.onSurface.withValues(alpha: 0.7),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -272,9 +272,9 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
           end: Alignment.bottomRight,
           colors: [
             (AppColors.attributeColors[widget.object.attribute] ?? AppColors.primary)
-                .withOpacity(0.4),
+                .withValues(alpha: 0.4),
             (AppColors.attributeColors[widget.object.attribute] ?? AppColors.primary)
-                .withOpacity(0.2),
+                .withValues(alpha: 0.2),
           ],
         ),
       ),
@@ -291,7 +291,7 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.6),
+        color: AppColors.surface.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: AppColors.surfaceVariant,
@@ -311,7 +311,7 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
               Text(
                 title,
                 style: TextStyle(
-                  color: AppColors.onSurface.withOpacity(0.7),
+                  color: AppColors.onSurface.withValues(alpha: 0.7),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -334,13 +334,12 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
 
   Widget _buildStatsCard() {
     final scanDate = widget.object.scannedAt;
-    final confidence = (widget.object.confidence * 100).toStringAsFixed(1);
     
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.6),
+        color: AppColors.surface.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: AppColors.surfaceVariant,
@@ -360,7 +359,7 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
               Text(
                 '発見情報',
                 style: TextStyle(
-                  color: AppColors.onSurface.withOpacity(0.7),
+                  color: AppColors.onSurface.withValues(alpha: 0.7),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -369,17 +368,8 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
           ),
           const SizedBox(height: 12),
           
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatItem('発見日時', 
-                  '${scanDate.year}/${scanDate.month.toString().padLeft(2, '0')}/${scanDate.day.toString().padLeft(2, '0')}'),
-              ),
-              Expanded(
-                child: _buildStatItem('信頼度', '$confidence%'),
-              ),
-            ],
-          ),
+          _buildStatItem('発見日時', 
+            '${scanDate.year}/${scanDate.month.toString().padLeft(2, '0')}/${scanDate.day.toString().padLeft(2, '0')}'),
           
           const SizedBox(height: 8),
           
@@ -407,7 +397,7 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
           Text(
             label,
             style: TextStyle(
-              color: AppColors.onSurface.withOpacity(0.6),
+              color: AppColors.onSurface.withValues(alpha: 0.6),
               fontSize: 10,
             ),
           ),
@@ -425,30 +415,42 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
     );
   }
 
-  void _shareObject() async {
+  void _shareToX() async {
     try {
-      // 説明文を短縮（50文字まで）
-      final shortDescription = widget.object.description.length > 50 
-          ? '${widget.object.description.substring(0, 50)}...'
+      // X (Twitter) 用のテキスト（文字数制限を考慮）
+      final shortDescription = widget.object.description.length > 80 
+          ? '${widget.object.description.substring(0, 80)}...'
           : widget.object.description;
       
-      final text = '''
-🔮 ${widget.object.alternateName}
+      final xText = '''🔮 ${widget.object.alternateName}
 
 【${widget.object.objectCategory}】
 属性:${widget.object.attribute} レア度:${widget.object.rarity}
 
-${shortDescription}
+$shortDescription
 
-#CHAOSVISION #中二スキャナー
-      ''';
-      
-      await Share.share(text);
+#CHAOSVISION #中二スキャナー''';
+
+      // X (Twitter) の文字数制限（280文字）を考慮してテキストを調整
+      final finalText = xText.length > 250 
+          ? '''🔮 ${widget.object.alternateName}
+
+【${widget.object.objectCategory}】
+属性:${widget.object.attribute} レア度:${widget.object.rarity}
+
+#CHAOSVISION #中二スキャナー'''
+          : xText;
+
+      // 一般的な共有を使用（システムのシェアシートが自動的にX等のアプリを表示）
+      await Share.share(
+        finalText,
+        subject: 'CHAOS VISION - ${widget.object.alternateName}',
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('共有に失敗しました'),
+            content: Text('X への共有に失敗しました'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -489,7 +491,7 @@ ${shortDescription}
             Text(
               'この神器を図鑑から完全に削除しますか？',
               style: TextStyle(
-                color: AppColors.onSurface.withOpacity(0.8),
+                color: AppColors.onSurface.withValues(alpha: 0.8),
                 fontSize: 14,
               ),
             ),
@@ -497,7 +499,7 @@ ${shortDescription}
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.surfaceVariant.withOpacity(0.5),
+                color: AppColors.surfaceVariant.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -525,7 +527,7 @@ ${shortDescription}
                         Text(
                           widget.object.objectCategory,
                           style: TextStyle(
-                            color: AppColors.onSurface.withOpacity(0.6),
+                            color: AppColors.onSurface.withValues(alpha: 0.6),
                             fontSize: 10,
                           ),
                         ),
@@ -552,7 +554,7 @@ ${shortDescription}
             child: Text(
               'キャンセル',
               style: TextStyle(
-                color: AppColors.onSurface.withOpacity(0.7),
+                color: AppColors.onSurface.withValues(alpha: 0.7),
               ),
             ),
           ),

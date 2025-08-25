@@ -47,5 +47,20 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>twitter</string>
+		<string>twitterrific</string>
+		<string>tweetbot</string>
+		<string>instagram</string>
+		<string>instagram-stories</string>
+		<string>line</string>
+		<string>fb</string>
+		<string>fb-messenger</string>
+		<string>whatsapp</string>
+		<string>telegram</string>
+		<string>mailto</string>
+		<string>sms</string>
+	</array>
 </dict>
 </plist>

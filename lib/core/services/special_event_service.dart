@@ -9,7 +9,7 @@ enum SpecialEventType {
 
 enum UltraRareCondition {
   cursedHour,     // 呪われた時刻 (4:44, 13:13, 23:23)
-  mysticalDay,    // 神秘的な日付 (満月、新月、13日の金曜日)
+  mysticalDay,    // 神秘的な日付 (13日の金曜日)
   specialDate,    // 特別な日付 (ハロウィン、クリスマスイブ等)
 }
 
@@ -163,11 +163,6 @@ class SpecialEventService {
       return true;
     }
     
-    // 満月・新月の近似計算
-    if (_isMoonPhase(now)) {
-      return true;
-    }
-    
     return false;
   }
 
@@ -191,18 +186,7 @@ class SpecialEventService {
     return false;
   }
 
-  /// 月の満ち欠けの近似計算
-  bool _isMoonPhase(DateTime now) {
-    // 簡易的な月齢計算（既知の新月からの経過日数）
-    final knownNewMoon = DateTime(2024, 1, 11); // 2024年1月11日の新月
-    final daysSinceKnown = now.difference(knownNewMoon).inDays;
-    final lunarCycle = 29.53; // 月の周期
-    final currentPhase = (daysSinceKnown % lunarCycle) / lunarCycle;
-    
-    // 満月（0.45-0.55）または新月（0.95-1.0, 0.0-0.05）
-    return (currentPhase >= 0.45 && currentPhase <= 0.55) ||
-           (currentPhase >= 0.95 || currentPhase <= 0.05);
-  }
+
 
   /// 超レア条件を取得
   UltraRareCondition _getUltraRareCondition(DateTime now) {
@@ -260,7 +244,7 @@ class SpecialEventService {
       return nextDay.difference(now).inMinutes;
     }
     
-    // 神秘的な日（満月・新月・13日の金曜日）は1日中
+    // 神秘的な日（13日の金曜日）は1日中
     final nextDay = DateTime(now.year, now.month, now.day + 1);
     return nextDay.difference(now).inMinutes;
   }
@@ -363,7 +347,7 @@ class SpecialEventService {
       'christmas': now.month == 12 && now.day == 24,
       'newYear': now.month == 1 && now.day == 1,
       'aprilFools': now.month == 4 && now.day == 1,
-      'moonPhase': _isMoonPhase(now),
+
       'dimensionDistortion': isDimensionDistortionActive(now),
     };
   }

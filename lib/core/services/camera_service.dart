@@ -1,6 +1,5 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class CameraService {
   CameraController? _controller;

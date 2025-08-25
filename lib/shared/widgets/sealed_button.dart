@@ -142,14 +142,14 @@ class _SealedButtonState extends State<SealedButton>
                   boxShadow: [
                     // ベースグロー
                     BoxShadow(
-                      color: widget.glowColor.withOpacity(0.3 + _glowController.value * 0.2),
+                      color: widget.glowColor.withValues(alpha: 0.3 + _glowController.value * 0.2),
                       blurRadius: 12 + _glowController.value * 6,
                       spreadRadius: 2 + _glowController.value * 2,
                     ),
                     // 封印解除エフェクト
                     if (_sealBreakAnimation.value > 0) ...[
                       BoxShadow(
-                        color: widget.glowColor.withOpacity(0.6 * _sealBreakAnimation.value),
+                        color: widget.glowColor.withValues(alpha: 0.6 * _sealBreakAnimation.value),
                         blurRadius: 30 * _sealBreakAnimation.value,
                         spreadRadius: 8 * _sealBreakAnimation.value,
                       ),
@@ -157,7 +157,7 @@ class _SealedButtonState extends State<SealedButton>
                     // ホバー時の追加グロー
                     if (_isHovered) ...[
                       BoxShadow(
-                        color: widget.glowColor.withOpacity(0.4),
+                        color: widget.glowColor.withValues(alpha: 0.4),
                         blurRadius: 20,
                         spreadRadius: 4,
                       ),
@@ -175,11 +175,11 @@ class _SealedButtonState extends State<SealedButton>
                         borderRadius: BorderRadius.circular(16),
                         border: widget.isOutlined 
                             ? Border.all(
-                                color: widget.glowColor.withOpacity(0.8),
+                                color: widget.glowColor.withValues(alpha: 0.8),
                                 width: 2 + _glowController.value,
                               )
                             : Border.all(
-                                color: widget.glowColor.withOpacity(0.3),
+                                color: widget.glowColor.withValues(alpha: 0.3),
                                 width: 1,
                               ),
                       ),
@@ -246,7 +246,7 @@ class _SealedButtonState extends State<SealedButton>
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
-                            color: widget.glowColor.withOpacity(0.15),
+                            color: widget.glowColor.withValues(alpha: 0.15),
                           ),
                         ),
                       ),
@@ -284,7 +284,7 @@ class RuneDecorationPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(opacity * (isHovered || isPressed ? 1.5 : 1.0))
+      ..color = color.withValues(alpha: opacity * (isHovered || isPressed ? 1.5 : 1.0))
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
@@ -307,7 +307,7 @@ class RuneDecorationPainter extends CustomPainter {
         text: TextSpan(
           text: _runeSymbols[i % _runeSymbols.length],
           style: TextStyle(
-            color: color.withOpacity(opacity * (isHovered || isPressed ? 1.5 : 1.0)),
+            color: color.withValues(alpha: opacity * (isHovered || isPressed ? 1.5 : 1.0)),
             fontSize: 12,
             fontWeight: FontWeight.bold,
           ),
@@ -369,7 +369,7 @@ class SealBreakPainter extends CustomPainter {
     if (progress <= 0) return;
     
     final paint = Paint()
-      ..color = color.withOpacity(0.8 * progress)
+      ..color = color.withValues(alpha: 0.8 * progress)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
 

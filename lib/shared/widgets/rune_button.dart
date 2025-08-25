@@ -36,11 +36,6 @@ class _RuneButtonState extends State<RuneButton>
   bool _isPressed = false;
   bool _isHovered = false;
 
-  // 古代ルーン文字
-  final List<String> _runeSymbols = [
-    'ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᚺ', 'ᚾ', 'ᛁ', 'ᛃ'
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -81,10 +76,6 @@ class _RuneButtonState extends State<RuneButton>
     _pressController.reverse();
   }
 
-  String _getRandomRune() {
-    return _runeSymbols[(DateTime.now().millisecondsSinceEpoch ~/ 100) % _runeSymbols.length];
-  }
-
   @override
   Widget build(BuildContext context) {
     return ScaleTransition(
@@ -105,24 +96,24 @@ class _RuneButtonState extends State<RuneButton>
               borderRadius: BorderRadius.circular(16),
               border: widget.isOutlined 
                   ? Border.all(
-                      color: widget.glowColor.withOpacity(0.8),
+                      color: widget.glowColor.withValues(alpha: 0.8),
                       width: 2,
                     )
                   : Border.all(
-                      color: widget.glowColor.withOpacity(0.2),
+                      color: widget.glowColor.withValues(alpha: 0.2),
                       width: 1,
                     ),
               // ソフトなグロー効果
               boxShadow: [
                 BoxShadow(
-                  color: widget.glowColor.withOpacity(_isHovered ? 0.3 : 0.15),
+                  color: widget.glowColor.withValues(alpha: _isHovered ? 0.3 : 0.15),
                   blurRadius: _isHovered ? 15 : 10,
                   spreadRadius: _isHovered ? 3 : 1,
                 ),
                 // タップ時の追加グロー
                 if (_isPressed) ...[
                   BoxShadow(
-                    color: widget.glowColor.withOpacity(0.4),
+                    color: widget.glowColor.withValues(alpha: 0.4),
                     blurRadius: 20,
                     spreadRadius: 4,
                   ),
@@ -171,8 +162,8 @@ class _RuneButtonState extends State<RuneButton>
                       size: const Size(20, 20),
                       painter: MiniMagicCirclePainter(
                         color: widget.isOutlined 
-                            ? widget.glowColor.withOpacity(0.6)
-                            : Colors.black.withOpacity(0.4),
+                            ? widget.glowColor.withValues(alpha: 0.6)
+                            : Colors.black.withValues(alpha: 0.4),
                       ),
                     ),
                   ),
@@ -188,8 +179,8 @@ class _RuneButtonState extends State<RuneButton>
                       size: const Size(20, 20),
                       painter: MiniMagicCirclePainter(
                         color: widget.isOutlined 
-                            ? widget.glowColor.withOpacity(0.6)
-                            : Colors.black.withOpacity(0.4),
+                            ? widget.glowColor.withValues(alpha: 0.6)
+                            : Colors.black.withValues(alpha: 0.4),
                       ),
                     ),
                   ),
@@ -200,7 +191,7 @@ class _RuneButtonState extends State<RuneButton>
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
-                      color: widget.glowColor.withOpacity(0.1),
+                      color: widget.glowColor.withValues(alpha: 0.1),
                     ),
                   ),
               ],

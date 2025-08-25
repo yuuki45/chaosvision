@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
@@ -192,13 +191,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen>
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.2),
+                          color: AppColors.primary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           _totalCount == _objects.length 
-                              ? '${_totalCount}件'
-                              : '${_objects.length}/${_totalCount}',
+                              ? '$_totalCount件'
+                              : '${_objects.length}/$_totalCount',
                           style: const TextStyle(
                             color: AppColors.primary,
                             fontWeight: FontWeight.bold,
@@ -292,9 +291,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen>
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
+                    color: Colors.orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
@@ -341,10 +340,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen>
         height: 36,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isReset ? AppColors.error.withOpacity(0.2) : AppColors.surfaceVariant,
+          color: isReset ? AppColors.error.withValues(alpha: 0.2) : AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isReset ? AppColors.error : AppColors.primary.withOpacity(0.3),
+            color: isReset ? AppColors.error : AppColors.primary.withValues(alpha: 0.3),
           ),
         ),
         child: Center(
@@ -363,42 +362,52 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen>
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.inventory_2_outlined,
-            size: 80,
-            color: AppColors.onBackground.withOpacity(0.3),
+    return SingleChildScrollView(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.6,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.inventory_2_outlined,
+                size: 80,
+                color: AppColors.onBackground.withValues(alpha: 0.3),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _totalCount == 0 ? '神器がありません' : '条件に一致する神器がありません',
+                style: TextStyle(
+                  color: AppColors.onBackground.withValues(alpha: 0.6),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(
+                  _totalCount == 0 
+                      ? 'スキャンして神器を発見しましょう！'
+                      : 'フィルターを変更してみてください',
+                  style: TextStyle(
+                    color: AppColors.onBackground.withValues(alpha: 0.4),
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            _totalCount == 0 ? '神器がありません' : '条件に一致する神器がありません',
-            style: TextStyle(
-              color: AppColors.onBackground.withOpacity(0.6),
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _totalCount == 0 
-                ? 'スキャンして神器を発見しましょう！'
-                : 'フィルターを変更してみてください',
-            style: TextStyle(
-              color: AppColors.onBackground.withOpacity(0.4),
-              fontSize: 14,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildObjectGrid() {
     return GridView.builder(
-      key: ValueKey('${_selectedAttribute}_${_selectedRarity}_${_searchQuery}'),
+      key: ValueKey('${_selectedAttribute}_${_selectedRarity}_$_searchQuery'),
       controller: _scrollController,
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -479,7 +488,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen>
           boxShadow: [
             BoxShadow(
               color: (AppColors.rarityColors[object.rarity] ?? AppColors.primary)
-                  .withOpacity(0.2),
+                  .withValues(alpha: 0.2),
               blurRadius: 8,
               spreadRadius: 1,
             ),
@@ -575,7 +584,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen>
                     child: Text(
                       object.objectCategory,
                       style: TextStyle(
-                        color: AppColors.onSurface.withOpacity(0.7),
+                        color: AppColors.onSurface.withValues(alpha: 0.7),
                         fontSize: 11,
                       ),
                       maxLines: 1,
@@ -602,9 +611,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen>
           end: Alignment.bottomRight,
           colors: [
             (AppColors.attributeColors[object.attribute] ?? AppColors.primary)
-                .withOpacity(0.3),
+                .withValues(alpha: 0.3),
             (AppColors.attributeColors[object.attribute] ?? AppColors.primary)
-                .withOpacity(0.1),
+                .withValues(alpha: 0.1),
           ],
         ),
       ),
@@ -753,9 +762,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
+                color: AppColors.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.error.withOpacity(0.3)),
+                border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -763,7 +772,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen>
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '${_totalCount}件の神器が完全に削除されます。この操作は取り消せません。',
+                      '$_totalCount件の神器が完全に削除されます。この操作は取り消せません。',
                       style: TextStyle(
                         color: AppColors.error,
                         fontSize: 12,

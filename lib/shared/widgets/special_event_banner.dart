@@ -84,11 +84,11 @@ class _SpecialEventBannerState extends State<SpecialEventBanner>
     
     final minutes = widget.remainingMinutes!;
     if (minutes < 60) {
-      return '残り ${minutes}分';
+      return '残り $minutes分';
     } else {
       final hours = minutes ~/ 60;
       final remainingMins = minutes % 60;
-      return '残り ${hours}時間${remainingMins}分';
+      return '残り $hours時間$remainingMins分';
     }
   }
 
@@ -106,12 +106,12 @@ class _SpecialEventBannerState extends State<SpecialEventBanner>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: eventColor.withOpacity(_glowAnimation.value),
+              color: eventColor.withValues(alpha: _glowAnimation.value),
               width: 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: eventColor.withOpacity(_glowAnimation.value * 0.5),
+                color: eventColor.withValues(alpha: _glowAnimation.value * 0.5),
                 blurRadius: 15 * _glowAnimation.value,
                 spreadRadius: 3 * _glowAnimation.value,
               ),
@@ -125,8 +125,8 @@ class _SpecialEventBannerState extends State<SpecialEventBanner>
                   borderRadius: BorderRadius.circular(12),
                   gradient: LinearGradient(
                     colors: [
-                      eventColor.withOpacity(0.1),
-                      eventColor.withOpacity(0.05),
+                      eventColor.withValues(alpha: 0.1),
+                      eventColor.withValues(alpha: 0.05),
                     ],
                   ),
                 ),
@@ -138,7 +138,7 @@ class _SpecialEventBannerState extends State<SpecialEventBanner>
                   child: CustomPaint(
                     painter: DistortionEffectPainter(
                       distortionValue: _distortionController.value,
-                      color: eventColor.withOpacity(0.2),
+                      color: eventColor.withValues(alpha: 0.2),
                     ),
                   ),
                 ),
@@ -154,9 +154,9 @@ class _SpecialEventBannerState extends State<SpecialEventBanner>
                       height: 48,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: eventColor.withOpacity(0.2),
+                        color: eventColor.withValues(alpha: 0.2),
                         border: Border.all(
-                          color: eventColor.withOpacity(_glowAnimation.value),
+                          color: eventColor.withValues(alpha: _glowAnimation.value),
                           width: 2,
                         ),
                       ),
@@ -187,7 +187,7 @@ class _SpecialEventBannerState extends State<SpecialEventBanner>
                           Text(
                             widget.event!.description,
                             style: TextStyle(
-                              color: AppColors.onBackground.withOpacity(0.8),
+                              color: AppColors.onBackground.withValues(alpha: 0.8),
                               fontSize: 12,
                               fontStyle: FontStyle.italic,
                             ),
@@ -200,7 +200,7 @@ class _SpecialEventBannerState extends State<SpecialEventBanner>
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: eventColor.withOpacity(0.2),
+                                color: eventColor.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -224,10 +224,10 @@ class _SpecialEventBannerState extends State<SpecialEventBanner>
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: eventColor.withOpacity(0.2),
+                        color: eventColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: eventColor.withOpacity(0.5),
+                          color: eventColor.withValues(alpha: 0.5),
                           width: 1,
                         ),
                       ),

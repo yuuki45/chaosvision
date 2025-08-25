@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 
@@ -106,7 +104,7 @@ class ImageCacheService {
       'totalSize': _currentCacheSize,
       'maxSize': _maxCacheSize,
       'maxCount': _maxCacheCount,
-      'usage': (_currentCacheSize / _maxCacheSize * 100).toStringAsFixed(1) + '%',
+      'usage': '${(_currentCacheSize / _maxCacheSize * 100).toStringAsFixed(1)}%',
     };
   }
 

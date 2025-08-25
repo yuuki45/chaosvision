@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
@@ -273,7 +272,7 @@ class AIService {
   Map<String, String> _generateDummyFromImage(String imagePath) {
     final random = Random();
     final attributes = AppConstants.attributes;
-    final rarities = AppConstants.rarityLevels;
+
     
     // 画像に基づいたダミーカテゴリをランダム選択
     final dummyCategories = [

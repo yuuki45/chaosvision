@@ -116,7 +116,7 @@ class _ParticleButtonState extends State<ParticleButton>
           onExit: (_) => setState(() => _isHovered = false),
           child: SizedBox(
             width: widget.width,
-            height: widget.height! + 60, // 粒子用の余白
+            height: widget.height + 60, // 粒子用の余白
             child: Stack(
               clipBehavior: Clip.none,
               children: [
@@ -125,14 +125,14 @@ class _ParticleButtonState extends State<ParticleButton>
                   animation: _particleController,
                   builder: (context, child) {
                     return CustomPaint(
-                      size: Size(widget.width ?? 200, widget.height! + 60),
+                      size: Size(widget.width ?? 200, widget.height + 60),
                       painter: ParticlePainter(
                         particles: _particles,
                         animationValue: _particleController.value,
                         particleColor: widget.particleColor,
                         isHovered: _isHovered,
                         isPressed: _isPressed,
-                        buttonHeight: widget.height!,
+                        buttonHeight: widget.height,
                       ),
                     );
                   },
@@ -150,17 +150,17 @@ class _ParticleButtonState extends State<ParticleButton>
                       borderRadius: BorderRadius.circular(16),
                       border: widget.isOutlined 
                           ? Border.all(
-                              color: widget.particleColor.withOpacity(0.8),
+                              color: widget.particleColor.withValues(alpha: 0.8),
                               width: 2,
                             )
                           : Border.all(
-                              color: widget.particleColor.withOpacity(0.2),
+                              color: widget.particleColor.withValues(alpha: 0.2),
                               width: 1,
                             ),
                       // ソフトなグロー効果
                       boxShadow: [
                         BoxShadow(
-                          color: widget.particleColor.withOpacity(_isHovered ? 0.3 : 0.15),
+                          color: widget.particleColor.withValues(alpha: _isHovered ? 0.3 : 0.15),
                           blurRadius: _isHovered ? 15 : 10,
                           spreadRadius: _isHovered ? 3 : 1,
                         ),
@@ -207,7 +207,7 @@ class _ParticleButtonState extends State<ParticleButton>
                       height: widget.height,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        color: widget.particleColor.withOpacity(0.1),
+                        color: widget.particleColor.withValues(alpha: 0.1),
                       ),
                     ),
                   ),
@@ -279,15 +279,15 @@ class ParticlePainter extends CustomPainter {
       if (isHovered) size *= 1.2;
       if (isPressed) size *= 1.4;
       
-      paint.color = particleColor.withOpacity(math.min(1.0, opacity));
+      paint.color = particleColor.withValues(alpha: math.min(1.0, opacity));
       
       // 粒子を描画（内側の明るいコアと外側のグロー）
       // 外側のグロー
-      paint.color = particleColor.withOpacity(math.min(0.3, opacity * 0.5));
+      paint.color = particleColor.withValues(alpha: math.min(0.3, opacity * 0.5));
       canvas.drawCircle(Offset(x, y), size * 1.5, paint);
       
       // 内側のコア
-      paint.color = particleColor.withOpacity(math.min(1.0, opacity));
+      paint.color = particleColor.withValues(alpha: math.min(1.0, opacity));
       canvas.drawCircle(Offset(x, y), size, paint);
     }
   }

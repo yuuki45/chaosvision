@@ -275,7 +275,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
                 height: 280,
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: AppColors.primary.withOpacity(0.8),
+                    color: AppColors.primary.withValues(alpha: 0.8),
                     width: 2,
                   ),
                   borderRadius: BorderRadius.circular(20),
@@ -378,7 +378,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
                   // 戻るボタン
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
@@ -393,34 +393,26 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      _isScanning ? '真理を解読中...' : 'CHAOS VISION',
+                      _isScanning ? '真理を解読中...' : '次元通信術式端末\n起動中',
                       style: const TextStyle(
                         color: AppColors.primary,
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
+                        height: 1.2,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                   
                   const Spacer(),
                   
-                  // カメラ切り替えボタン
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.cameraswitch, color: Colors.white),
-                      onPressed: _isScanning ? null : () {
-                        _cameraService.switchCamera();
-                      },
-                    ),
-                  ),
+                  // 右側のスペース（バランス用）
+                  SizedBox(width: 56), // IconButtonと同じ幅
+
                 ],
               ),
           ),
@@ -438,7 +430,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(0.8),
+                    Colors.black.withValues(alpha: 0.8),
                   ],
                 ),
               ),
@@ -457,8 +449,8 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
                             shape: BoxShape.circle,
                             gradient: RadialGradient(
                               colors: [
-                                AppColors.primary.withOpacity(0.3),
-                                AppColors.primary.withOpacity(0.1),
+                                AppColors.primary.withValues(alpha: 0.3),
+                                AppColors.primary.withValues(alpha: 0.1),
                                 Colors.transparent,
                               ],
                             ),
@@ -472,11 +464,11 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: _isScanning
-                                      ? AppColors.primary.withOpacity(0.5)
+                                      ? AppColors.primary.withValues(alpha: 0.5)
                                       : AppColors.primary,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: AppColors.primary.withOpacity(0.4),
+                                      color: AppColors.primary.withValues(alpha: 0.4),
                                       blurRadius: 20,
                                       spreadRadius: 2,
                                     ),

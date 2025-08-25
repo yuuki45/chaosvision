@@ -109,7 +109,7 @@ class _MagicCircleWidgetState extends State<MagicCircleWidget>
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: widget.color.withOpacity(0.6 * _pulseController.value),
+                      color: widget.color.withValues(alpha: 0.6 * _pulseController.value),
                       blurRadius: 20,
                       spreadRadius: 5,
                     ),
@@ -118,9 +118,9 @@ class _MagicCircleWidgetState extends State<MagicCircleWidget>
                 child: Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: widget.color.withOpacity(0.1),
+                    color: widget.color.withValues(alpha: 0.1),
                     border: Border.all(
-                      color: widget.color.withOpacity(0.5),
+                      color: widget.color.withValues(alpha: 0.5),
                       width: 1,
                     ),
                   ),
@@ -150,7 +150,7 @@ class MagicCirclePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final Paint paint = Paint()
-      ..color = color.withOpacity(opacity)
+      ..color = color.withValues(alpha: opacity)
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
 
@@ -170,7 +170,7 @@ class MagicCirclePainter extends CustomPainter {
 
   void _drawOuterDecorations(Canvas canvas, Offset center, double radius, Paint paint) {
     final decorationPaint = Paint()
-      ..color = color.withOpacity(opacity * 0.7)
+      ..color = color.withValues(alpha: opacity * 0.7)
       ..strokeWidth = strokeWidth * 0.5
       ..style = PaintingStyle.stroke;
 
@@ -199,7 +199,7 @@ class MagicCirclePainter extends CustomPainter {
 
   void _drawInnerDecorations(Canvas canvas, Offset center, double radius, Paint paint) {
     final decorationPaint = Paint()
-      ..color = color.withOpacity(opacity * 0.6)
+      ..color = color.withValues(alpha: opacity * 0.6)
       ..strokeWidth = strokeWidth * 0.4
       ..style = PaintingStyle.stroke;
 

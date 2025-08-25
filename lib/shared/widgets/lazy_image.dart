@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import '../../core/constants/app_colors.dart';
@@ -100,7 +99,7 @@ class _LazyImageState extends State<LazyImage>
       }
 
       // スクロール可能なウィジェットを探す
-      final scrollableContext = Scrollable.of(context);
+      final scrollableContext = Scrollable.maybeOf(context);
       if (scrollableContext == null) {
         // スクロール可能でない場合は即座に表示
         if (!_isVisible) {
@@ -383,7 +382,7 @@ class _LazyImageState extends State<LazyImage>
           ),
           child: Icon(
             Icons.broken_image,
-            color: AppColors.onSurface.withOpacity(0.5),
+            color: AppColors.onSurface.withValues(alpha: 0.5),
             size: 32,
           ),
         );
@@ -407,7 +406,7 @@ class _LazyImageState extends State<LazyImage>
         width: widget.width,
         height: widget.height,
         decoration: BoxDecoration(
-          color: AppColors.surfaceVariant.withOpacity(0.3),
+          color: AppColors.surfaceVariant.withValues(alpha: 0.3),
           borderRadius: widget.borderRadius,
         ),
       );

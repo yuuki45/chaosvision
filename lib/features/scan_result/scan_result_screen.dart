@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+
 import '../../core/constants/app_colors.dart';
 import '../../shared/models/scanned_object.dart';
 import '../../shared/widgets/gradient_button.dart';
@@ -70,33 +71,37 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
     });
   }
 
-
-  Future<void> _shareResult() async {
+  Future<void> _shareToX() async {
     try {
-      // 説明文を短縮（50文字まで）
-      final shortDescription = widget.scannedObject.description.length > 50 
-          ? '${widget.scannedObject.description.substring(0, 50)}...'
+      // X (Twitter) 用のテキスト（文字数制限を考慮）
+      final shortDescription = widget.scannedObject.description.length > 80 
+          ? '${widget.scannedObject.description.substring(0, 80)}...'
           : widget.scannedObject.description;
       
-      final shareText = '''
-🔮 ${widget.scannedObject.alternateName}
+      final xText = '''🔮 ${widget.scannedObject.alternateName}
 
 【${widget.scannedObject.objectCategory}】
 属性:${widget.scannedObject.attribute} レア度:${widget.scannedObject.rarity}
 
-${shortDescription}
+$shortDescription
 
-#CHAOSVISION #中二スキャナー
-''';
+#CHAOSVISION #中二スキャナー''';
 
-      if (widget.scannedObject.imageUrl != null) {
-        await Share.shareXFiles(
-          [XFile(widget.scannedObject.imageUrl!)],
-          text: shareText,
-        );
-      } else {
-        await Share.share(shareText);
-      }
+      // X (Twitter) の文字数制限（280文字）を考慮してテキストを調整
+      final finalText = xText.length > 250 
+          ? '''🔮 ${widget.scannedObject.alternateName}
+
+【${widget.scannedObject.objectCategory}】
+属性:${widget.scannedObject.attribute} レア度:${widget.scannedObject.rarity}
+
+#CHAOSVISION #中二スキャナー'''
+          : xText;
+
+      // 一般的な共有を使用（システムのシェアシートが自動的にX等のアプリを表示）
+      await Share.share(
+        finalText,
+        subject: 'CHAOS VISION - ${widget.scannedObject.alternateName}',
+      );
     } catch (e) {
       _showError('共有エラー: $e');
     }
@@ -128,7 +133,7 @@ ${shortDescription}
             center: Alignment.center,
             radius: 1.2,
             colors: [
-              _getAttributeColor().withOpacity(0.2),
+              _getAttributeColor().withValues(alpha: 0.2),
               AppColors.background,
               Colors.black,
             ],
@@ -157,8 +162,9 @@ ${shortDescription}
                     ),
                     const Spacer(),
                     IconButton(
-                      onPressed: _shareResult,
-                      icon: const Icon(Icons.share, color: Colors.white),
+                      onPressed: _shareToX,
+                      icon: const Icon(Icons.alternate_email, color: Colors.white),
+                      tooltip: 'X に共有',
                     ),
                   ],
                 ),
@@ -188,7 +194,7 @@ ${shortDescription}
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: _getAttributeColor().withOpacity(0.5 * _glowController.value),
+                                      color: _getAttributeColor().withValues(alpha: 0.5 * _glowController.value),
                                       blurRadius: 20,
                                       spreadRadius: 5,
                                     ),
@@ -226,7 +232,7 @@ ${shortDescription}
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: _getAttributeColor().withOpacity(0.3),
+                                color: _getAttributeColor().withValues(alpha: 0.3),
                                 blurRadius: 15,
                                 offset: const Offset(0, 5),
                               ),
@@ -337,26 +343,7 @@ ${shortDescription}
                                       ),
                                     ],
                                   ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      const Text(
-                                        '認識精度',
-                                        style: TextStyle(
-                                          color: AppColors.onSurface,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                      Text(
-                                        '${(widget.scannedObject.confidence * 100).toInt()}%',
-                                        style: const TextStyle(
-                                          color: AppColors.onSurface,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+
                                 ],
                               ),
                             ],
@@ -381,10 +368,10 @@ ${shortDescription}
                               padding: const EdgeInsets.all(16),
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: AppColors.success.withOpacity(0.2),
+                                color: AppColors.success.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: AppColors.success.withOpacity(0.5),
+                                  color: AppColors.success.withValues(alpha: 0.5),
                                   width: 1,
                                 ),
                               ),
@@ -411,10 +398,21 @@ ${shortDescription}
                             ),
                             
                             GradientButton(
-                              text: 'ホームに戻る',
+                              text: 'カメラ撮影モードに戻る',
                               onPressed: () => Navigator.of(context).pop(),
                               gradient: LinearGradient(
-                                colors: [_getAttributeColor(), _getAttributeColor().withOpacity(0.7)]
+                                colors: [AppColors.secondary, AppColors.secondary.withValues(alpha: 0.7)]
+                              ),
+                              width: double.infinity,
+                            ),
+                            
+                            const SizedBox(height: 12),
+                            
+                            GradientButton(
+                              text: 'ホームに戻る',
+                              onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+                              gradient: LinearGradient(
+                                colors: [_getAttributeColor(), _getAttributeColor().withValues(alpha: 0.7)]
                               ),
                               width: double.infinity,
                             ),

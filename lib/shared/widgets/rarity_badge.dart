@@ -23,7 +23,7 @@ class RarityBadge extends StatelessWidget {
         vertical: size * 0.2,
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(size * 0.4),
         border: Border.all(color: color, width: 1),
       ),

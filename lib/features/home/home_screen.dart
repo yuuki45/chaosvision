@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/special_event_service.dart';
 import '../../shared/widgets/rune_button.dart';
 import '../../shared/widgets/magic_circle_widget.dart';
 import '../../shared/widgets/special_event_banner.dart';
+
 import '../scanner/scanner_screen.dart';
 import '../collection/collection_screen.dart';
 import '../debug/event_test_screen.dart';
@@ -89,10 +91,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Text(
                               AppConstants.appName,
-                              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                              style: GoogleFonts.cinzel(
                                 fontSize: 36,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 2.0,
+                                color: AppColors.primary,
                               ),
                             ),
                             
@@ -117,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Text(
                             '現実世界の真の姿を見よ',
                             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: AppColors.onBackground.withOpacity(0.8),
+                              color: AppColors.onBackground.withValues(alpha: 0.8),
                               fontStyle: FontStyle.italic,
                             ),
                             textAlign: TextAlign.center,
@@ -194,25 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 },
                               ),
                               
-                              const SizedBox(height: 16),
-                              
-                              // デバッグ用イベントテストボタン
-                              RuneButton(
-                                text: 'イベントテスト',
-                                isOutlined: true,
-                                gradient: const LinearGradient(
-                                  colors: [AppColors.error, AppColors.error],
-                                ),
-                                glowColor: AppColors.error,
-                                width: double.infinity,
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => const EventTestScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
+
                             ],
                           ),
                         ),

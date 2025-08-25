@@ -116,20 +116,20 @@ class _MagicButtonState extends State<MagicButton>
                   boxShadow: [
                     // 内側のグロー
                     BoxShadow(
-                      color: widget.glowColor.withOpacity(0.4 + _glowController.value * 0.3),
+                      color: widget.glowColor.withValues(alpha: 0.4 + _glowController.value * 0.3),
                       blurRadius: 8 + _glowController.value * 4,
                       spreadRadius: 1 + _glowController.value * 2,
                     ),
                     // 外側のグロー
                     BoxShadow(
-                      color: widget.glowColor.withOpacity(0.2 + _glowController.value * 0.2),
+                      color: widget.glowColor.withValues(alpha: 0.2 + _glowController.value * 0.2),
                       blurRadius: 20 + _glowController.value * 10,
                       spreadRadius: 2 + _glowController.value * 3,
                     ),
                     // ホバー時の追加グロー
                     if (_isHovered || _isPressed) ...[
                       BoxShadow(
-                        color: widget.glowColor.withOpacity(0.6),
+                        color: widget.glowColor.withValues(alpha: 0.6),
                         blurRadius: 30,
                         spreadRadius: 5,
                       ),
@@ -147,7 +147,7 @@ class _MagicButtonState extends State<MagicButton>
                         borderRadius: BorderRadius.circular(16),
                         border: widget.isOutlined 
                             ? Border.all(
-                                color: widget.glowColor.withOpacity(0.8),
+                                color: widget.glowColor.withValues(alpha: 0.8),
                                 width: 2 + _glowController.value,
                               )
                             : null,
@@ -219,7 +219,7 @@ class _MagicButtonState extends State<MagicButton>
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
-                            color: widget.glowColor.withOpacity(0.2),
+                            color: widget.glowColor.withValues(alpha: 0.2),
                           ),
                         ),
                       ),
@@ -252,7 +252,7 @@ class MagicCircleButtonPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = color.withOpacity(opacity * (isHovered || isPressed ? 2.0 : 1.0))
+      ..color = color.withValues(alpha: opacity * (isHovered || isPressed ? 2.0 : 1.0))
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 

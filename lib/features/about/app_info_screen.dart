@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/app_colors.dart';
 import '../../shared/widgets/rune_button.dart';
+import '../legal/privacy_policy_screen.dart';
+import '../legal/terms_of_service_screen.dart';
+import '../contact/contact_screen.dart';
 
 class AppInfoScreen extends StatelessWidget {
   const AppInfoScreen({super.key});
@@ -118,10 +122,12 @@ class AppInfoScreen extends StatelessWidget {
                             title: '特殊イベント',
                             icon: Icons.star,
                             content: '特定の時間帯や条件で"超レア神器"が出現することがあります：\n\n'
-                                   '🌙 真夜中の闇の時刻（午前4:44）\n'
-                                   '現実と異界の境界が最も薄くなる時刻\n\n'
-                                   '🌕 満月の夜\n'
-                                   '月の魔力が最高潮に達する神秘の夜\n\n'
+                                   '🌙 呪われた時刻\n'
+                                   '4:44、13:13、23:23 - 現実と異界の境界が最も薄くなる瞬間\n\n'
+                                   '🔥 13日の金曜日\n'
+                                   '不吉な力が高まる恐怖の日\n\n'
+                                   '🎃 特別な日付\n'
+                                   'ハロウィン、クリスマスイブ、新年、エイプリルフール\n\n'
                                    '⚡ 次元歪曲モード発生時\n'
                                    '時空の歪みにより異世界の神器が出現\n\n'
                                    'これらの時間には通常よりも強力で神秘的な神器が発見される可能性が高くなります。',
@@ -152,10 +158,10 @@ class AppInfoScreen extends StatelessWidget {
                             width: double.infinity,
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: AppColors.surface.withOpacity(0.3),
+                              color: AppColors.surface.withValues(alpha: 0.3),
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: AppColors.primary.withOpacity(0.3),
+                                color: AppColors.primary.withValues(alpha: 0.3),
                                 width: 1,
                               ),
                             ),
@@ -190,7 +196,7 @@ class AppInfoScreen extends StatelessWidget {
                                 Text(
                                   '中二スキャナー - CHAOS VISION -',
                                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.onSurface.withOpacity(0.8),
+                                    color: AppColors.onSurface.withValues(alpha: 0.8),
                                     fontStyle: FontStyle.italic,
                                   ),
                                 ),
@@ -198,7 +204,71 @@ class AppInfoScreen extends StatelessWidget {
                             ),
                           ),
                           
-                          const SizedBox(height: 40),
+                          const SizedBox(height: 32),
+                          
+                          // 法的文書ボタン
+                          SizedBox(
+                            width: double.infinity,
+                            child: RuneButton(
+                              text: 'プライバシーポリシー',
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const PrivacyPolicyScreen(),
+                                  ),
+                                );
+                              },
+                              gradient: const LinearGradient(
+                                colors: [AppColors.secondary, AppColors.secondaryDark],
+                              ),
+                              glowColor: AppColors.secondary,
+                              isOutlined: true,
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 12),
+                          
+                          SizedBox(
+                            width: double.infinity,
+                            child: RuneButton(
+                              text: '利用規約',
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const TermsOfServiceScreen(),
+                                  ),
+                                );
+                              },
+                              gradient: const LinearGradient(
+                                colors: [AppColors.secondary, AppColors.secondaryDark],
+                              ),
+                              glowColor: AppColors.secondary,
+                              isOutlined: true,
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 12),
+                          
+                          SizedBox(
+                            width: double.infinity,
+                            child: RuneButton(
+                              text: 'お問い合わせ',
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const ContactScreen(),
+                                  ),
+                                );
+                              },
+                              gradient: const LinearGradient(
+                                colors: [AppColors.secondary, AppColors.secondaryDark],
+                              ),
+                              glowColor: AppColors.secondary,
+                              isOutlined: true,
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 24),
                           
                           // 戻るボタン
                           SizedBox(
@@ -233,10 +303,10 @@ class AppInfoScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.2),
+        color: AppColors.surface.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppColors.secondary.withOpacity(0.3),
+          color: AppColors.secondary.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
