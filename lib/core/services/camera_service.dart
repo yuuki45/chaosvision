@@ -1,5 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class CameraService {
   CameraController? _controller;
@@ -66,7 +68,43 @@ class CameraService {
     }
 
     try {
-      return await _controller!.takePicture();
+      // 一時的に撮影
+      final XFile tempImage = await _controller!.takePicture();
+      
+      // 永続保存用のディレクトリを取得
+      final Directory appDocDir = await getApplicationDocumentsDirectory();
+      final Directory imagesDir = Directory('${appDocDir.path}/images');
+      
+      // 画像保存ディレクトリが存在しない場合は作成
+      if (!await imagesDir.exists()) {
+        await imagesDir.create(recursive: true);
+      }
+      
+      // ユニークなファイル名を生成
+      final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+      final String fileName = 'scan_$timestamp.jpg';
+      final String permanentPath = '${imagesDir.path}/$fileName';
+      
+      // 一時ファイルを永続ディレクトリにコピー
+      final File tempFile = File(tempImage.path);
+      await tempFile.copy(permanentPath);
+      
+      // 一時ファイルを削除
+      try {
+        await tempFile.delete();
+      } catch (e) {
+        debugPrint('Failed to delete temp file: $e');
+      }
+      
+      debugPrint('Image saved permanently to: $permanentPath');
+      
+      // 相対パスを計算
+      final Directory appDocDir2 = await getApplicationDocumentsDirectory();
+      final String relativePath = permanentPath.replaceFirst('${appDocDir2.path}/', '');
+      
+      debugPrint('Relative path: $relativePath');
+      // XFileには絶対パス、後で相対パス情報も必要なら別途取得
+      return XFile(permanentPath);
     } catch (e) {
       debugPrint('Error taking picture: $e');
       return null;

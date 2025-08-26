@@ -138,6 +138,18 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
         return;
       }
 
+      // 相対パスを計算
+      final appDir = await getApplicationDocumentsDirectory();
+      // パスの区切り文字を正規化
+      final basePath = appDir.path.endsWith('/') ? appDir.path : '${appDir.path}/';
+      final relativePath = savedImagePath.startsWith(basePath) 
+          ? savedImagePath.substring(basePath.length)
+          : savedImagePath.replaceFirst('${appDir.path}/', '');
+      
+      debugPrint('絶対パス: $savedImagePath');
+      debugPrint('ベースパス: $basePath');
+      debugPrint('相対パス: $relativePath');
+
       debugPrint('神器の真名を解読中...');
       
       // AIで画像を解析して物体認識 + 中二病名前生成
@@ -148,7 +160,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
         return;
       }
 
-      // スキャン結果を作成（保存した画像パスを使用）
+      // スキャン結果を作成（相対パスを使用）
       final scannedObject = ScannedObject(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         objectCategory: aiResult['objectCategory'] ?? '未知の物体',
@@ -157,7 +169,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen>
         description: aiResult['description'] ?? '不思議な力を秘めた神器',
         rarity: aiResult['rarity'] ?? 'コモン',
         scannedAt: DateTime.now(),
-        imageUrl: savedImagePath, // 保存したパスを使用
+        imageRelativePath: relativePath, // 相対パスを保存
         confidence: 0.95, // AI分析なので高い信頼度
       );
 

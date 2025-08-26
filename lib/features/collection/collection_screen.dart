@@ -510,8 +510,8 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen>
                   ),
                 ),
                 child: LazyImage(
-                  key: ValueKey('${object.id}_${object.imageUrl}'),
-                  imagePath: object.imageUrl,
+                  key: ValueKey('${object.id}_${object.imageRelativePath}'),
+                  imagePath: object.imageRelativePath,
                   width: 200, // 固定サイズでリサイズを有効化
                   height: 150,
                   fit: BoxFit.cover,

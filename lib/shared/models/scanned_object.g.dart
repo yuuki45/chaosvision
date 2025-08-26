@@ -24,7 +24,7 @@ class ScannedObjectAdapter extends TypeAdapter<ScannedObject> {
       description: fields[4] as String,
       rarity: fields[5] as String,
       scannedAt: fields[6] as DateTime,
-      imageUrl: fields[7] as String?,
+      imageRelativePath: fields[7] as String?,
       confidence: fields[8] as double,
     );
   }
@@ -48,7 +48,7 @@ class ScannedObjectAdapter extends TypeAdapter<ScannedObject> {
       ..writeByte(6)
       ..write(obj.scannedAt)
       ..writeByte(7)
-      ..write(obj.imageUrl)
+      ..write(obj.imageRelativePath)
       ..writeByte(8)
       ..write(obj.confidence);
   }
@@ -77,7 +77,7 @@ ScannedObject _$ScannedObjectFromJson(Map<String, dynamic> json) =>
       description: json['description'] as String,
       rarity: json['rarity'] as String,
       scannedAt: DateTime.parse(json['scannedAt'] as String),
-      imageUrl: json['imageUrl'] as String?,
+      imageRelativePath: json['imageRelativePath'] as String?,
       confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
     );
 
@@ -90,6 +90,6 @@ Map<String, dynamic> _$ScannedObjectToJson(ScannedObject instance) =>
       'description': instance.description,
       'rarity': instance.rarity,
       'scannedAt': instance.scannedAt.toIso8601String(),
-      'imageUrl': instance.imageUrl,
+      'imageRelativePath': instance.imageRelativePath,
       'confidence': instance.confidence,
     };

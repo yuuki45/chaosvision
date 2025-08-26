@@ -9,6 +9,7 @@ import '../../shared/widgets/gradient_button.dart';
 import '../../shared/widgets/attribute_badge.dart';
 import '../../shared/widgets/rarity_badge.dart';
 
+
 class ScanResultScreen extends ConsumerStatefulWidget {
   final ScannedObject scannedObject;
 
@@ -26,10 +27,14 @@ class _ScanResultScreenState extends ConsumerState<ScanResultScreen>
   late AnimationController _slideController;
   late AnimationController _scaleController;
   late AnimationController _glowController;
+  late Future<String?> _imagePathFuture;
 
   @override
   void initState() {
     super.initState();
+    
+    // Futureを一度だけ作成
+    _imagePathFuture = widget.scannedObject.getFullImagePath();
     
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -122,6 +127,110 @@ $shortDescription
     return AppColors.attributeColors[widget.scannedObject.attribute] ?? AppColors.primary;
   }
 
+  // 画像ウィジェットを構築（スキャン結果画面専用）
+  Widget _buildImageWidget() {
+
+    if (widget.scannedObject.imageRelativePath == null) {
+      debugPrint('ScanResultScreen: imageRelativePath が null');
+      return Container(
+        width: double.infinity,
+        height: 200,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceVariant,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Icon(
+          Icons.image_not_supported,
+          color: AppColors.onSurface.withValues(alpha: 0.5),
+          size: 32,
+        ),
+      );
+    }
+
+    return FutureBuilder<String?>(
+      future: _imagePathFuture,
+      builder: (context, snapshot) {
+
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          return Container(
+            width: double.infinity,
+            height: 200,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.primary,
+                strokeWidth: 2,
+              ),
+            ),
+          );
+        }
+
+        if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+          return Container(
+            width: double.infinity,
+            height: 200,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.broken_image,
+                  color: AppColors.onSurface.withValues(alpha: 0.5),
+                  size: 32,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'エラー: ${snapshot.error ?? "データなし"}',
+                  style: TextStyle(
+                    color: AppColors.onSurface.withValues(alpha: 0.7),
+                    fontSize: 10,
+                  ),
+                ),
+                Text(
+                  '相対パス: ${widget.scannedObject.imageRelativePath}',
+                  style: TextStyle(
+                    color: AppColors.onSurface.withValues(alpha: 0.5),
+                    fontSize: 8,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final imagePath = snapshot.data!;
+
+        return Image.file(
+          File(imagePath),
+          width: 280,
+          height: 280,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+              return Container(
+                width: 280,
+              height: 280,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  Icons.broken_image,
+                  color: AppColors.onSurface.withValues(alpha: 0.5),
+                  size: 32,
+                ),
+              );
+            },
+          );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,7 +285,7 @@ $shortDescription
                   child: Column(
                     children: [
                       // 画像表示
-                      if (widget.scannedObject.imageUrl != null)
+                      if (widget.scannedObject.imageRelativePath != null)
                         SlideTransition(
                           position: Tween<Offset>(
                             begin: const Offset(0, -0.5),
@@ -202,12 +311,7 @@ $shortDescription
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(16),
-                                  child: Image.file(
-                                    File(widget.scannedObject.imageUrl!),
-                                    width: 200,
-                                    height: 200,
-                                    fit: BoxFit.cover,
-                                  ),
+                                  child: _buildImageWidget(),
                                 ),
                               );
                             },

@@ -7,6 +7,7 @@ import '../../shared/models/scanned_object.dart';
 import '../../shared/widgets/attribute_badge.dart';
 import '../../shared/widgets/rarity_badge.dart';
 import '../../shared/widgets/magic_circle_widget.dart';
+import '../../shared/widgets/lazy_image.dart';
 
 class ObjectDetailScreen extends StatefulWidget {
   final ScannedObject object;
@@ -155,13 +156,11 @@ class _ObjectDetailScreenState extends State<ObjectDetailScreen>
                                   ],
                                 ),
                                 child: ClipOval(
-                                  child: widget.object.imageUrl != null
-                                      ? Image.file(
-                                          File(widget.object.imageUrl!),
+                                  child: widget.object.imageRelativePath != null
+                                      ? LazyImage(
+                                          imagePath: widget.object.imageRelativePath,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return _buildPlaceholderImage();
-                                          },
+                                          errorWidget: _buildPlaceholderImage(),
                                         )
                                       : _buildPlaceholderImage(),
                                 ),
@@ -589,11 +588,14 @@ $shortDescription
       );
 
       // 画像ファイルを削除
-      if (widget.object.imageUrl != null) {
-        final imageFile = File(widget.object.imageUrl!);
-        if (await imageFile.exists()) {
-          await imageFile.delete();
-          debugPrint('画像ファイルを削除しました: ${widget.object.imageUrl}');
+      if (widget.object.imageRelativePath != null) {
+        final fullPath = await widget.object.getFullImagePath();
+        if (fullPath != null) {
+          final imageFile = File(fullPath);
+          if (await imageFile.exists()) {
+            await imageFile.delete();
+            debugPrint('画像ファイルを削除しました: $fullPath');
+          }
         }
       }
 

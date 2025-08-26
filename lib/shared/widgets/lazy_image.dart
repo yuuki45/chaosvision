@@ -2,12 +2,13 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
+import 'package:path_provider/path_provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/image_cache_service.dart';
 import '../../core/services/memory_monitor_service.dart';
 
 class LazyImage extends StatefulWidget {
-  final String? imagePath;
+  final String? imagePath; // 相対パスまたは絶対パス対応
   final double? width;
   final double? height;
   final BoxFit fit;
@@ -170,9 +171,29 @@ class _LazyImageState extends State<LazyImage>
         return;
       }
 
+      // 動的パス解決: 相対パスの場合は絶対パスに変換
+      String fullImagePath = imagePath;
+      if (!imagePath.startsWith('/')) {
+        // 相対パスの場合、Documentsディレクトリからの絶対パスに変換
+        final appDir = await getApplicationDocumentsDirectory();
+        fullImagePath = '${appDir.path}/$imagePath';
+        debugPrint('LazyImage: 相対パス解決');
+        debugPrint('  入力: $imagePath');
+        debugPrint('  ベース: ${appDir.path}');
+        debugPrint('  結果: $fullImagePath');
+      } else {
+        debugPrint('LazyImage: 絶対パス使用');
+        debugPrint('  パス: $fullImagePath');
+      }
+      
       // ファイルから読み込み
-      final file = File(imagePath);
-      if (await file.exists()) {
+      final file = File(fullImagePath);
+      final fileExists = await file.exists();
+      debugPrint('LazyImage: ファイル存在確認');
+      debugPrint('  パス: $fullImagePath');
+      debugPrint('  存在: $fileExists');
+      
+      if (fileExists) {
         final originalImageBytes = await file.readAsBytes();
         
         // リサイズを適用（無限大の値は除外）
@@ -190,6 +211,7 @@ class _LazyImageState extends State<LazyImage>
         
         _createImageFromBytes(processedImageBytes);
       } else {
+        debugPrint('LazyImage: ファイルが見つかりません - $fullImagePath');
         _onImageError();
       }
     } catch (e) {
