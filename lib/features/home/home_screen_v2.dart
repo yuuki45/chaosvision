@@ -17,7 +17,7 @@ import '../../shared/widgets/codex/mantra_block.dart';
 import '../../shared/widgets/codex/scanline_overlay.dart';
 import '../../shared/widgets/codex/spine_label.dart';
 
-import '../about/app_info_screen.dart';
+import '../about/app_info_screen_v2.dart';
 import '../collection/collection_screen_v2.dart';
 import '../scanner/scanner_screen_v2.dart';
 
@@ -196,7 +196,7 @@ class _HomeScreenV2State extends State<HomeScreenV2> {
                               subLabel: '起源覚書',
                               description: 'Acknowledge the origin of this rite.',
                               tone: TileTone.tertiary,
-                              onPressed: () => _push(const AppInfoScreen()),
+                              onPressed: () => _push(const AppInfoScreenV2()),
                             ),
                           ],
                         ),
