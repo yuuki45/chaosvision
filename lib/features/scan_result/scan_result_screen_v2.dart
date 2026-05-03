@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:share_plus/share_plus.dart';
-
 import '../../core/constants/app_colors.dart';
+import '../../core/services/share_service.dart';
 import '../../shared/models/scanned_object.dart';
 import '../../shared/widgets/codex/codex_image_frame.dart';
 import '../../shared/widgets/codex/grain_overlay.dart';
@@ -83,40 +82,7 @@ class _ScanResultScreenV2State extends ConsumerState<ScanResultScreenV2> {
   }
 
   Future<void> _share() async {
-    try {
-      final desc = widget.scannedObject.description;
-      final shortDesc =
-          desc.length > 80 ? '${desc.substring(0, 80)}...' : desc;
-      final body = '''🔮 ${widget.scannedObject.alternateName}
-
-【${widget.scannedObject.objectCategory}】
-属性:${widget.scannedObject.attribute} レア度:${widget.scannedObject.rarity}
-
-$shortDesc
-
-#CHAOSVISION #中二スキャナー''';
-      final finalText = body.length > 250
-          ? '''🔮 ${widget.scannedObject.alternateName}
-
-【${widget.scannedObject.objectCategory}】
-属性:${widget.scannedObject.attribute} レア度:${widget.scannedObject.rarity}
-
-#CHAOSVISION #中二スキャナー'''
-          : body;
-      await Share.share(
-        finalText,
-        subject: 'CHAOS VISION - ${widget.scannedObject.alternateName}',
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.blood,
-            content: Text('共有エラー: $e', style: GoogleFonts.shipporiMincho()),
-          ),
-        );
-      }
-    }
+    await ShareService.shareScannedObject(context, widget.scannedObject);
   }
 
   String _twoDigit(int v) => v.toString().padLeft(2, '0');

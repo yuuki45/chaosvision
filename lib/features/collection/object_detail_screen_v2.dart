@@ -3,9 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:share_plus/share_plus.dart';
-
 import '../../core/constants/app_colors.dart';
+import '../../core/services/share_service.dart';
 import '../../core/services/storage_service.dart';
 import '../../shared/models/scanned_object.dart';
 import '../../shared/widgets/codex/codex_image_frame.dart';
@@ -107,33 +106,7 @@ class _ObjectDetailScreenV2State extends State<ObjectDetailScreenV2> {
   }
 
   Future<void> _share() async {
-    try {
-      final desc = widget.object.description;
-      final shortDesc =
-          desc.length > 80 ? '${desc.substring(0, 80)}...' : desc;
-      final body = '''🔮 ${widget.object.alternateName}
-
-【${widget.object.objectCategory}】
-属性:${widget.object.attribute} レア度:${widget.object.rarity}
-
-$shortDesc
-
-#CHAOSVISION #中二スキャナー''';
-      final finalText = body.length > 250
-          ? '''🔮 ${widget.object.alternateName}
-
-【${widget.object.objectCategory}】
-属性:${widget.object.attribute} レア度:${widget.object.rarity}
-
-#CHAOSVISION #中二スキャナー'''
-          : body;
-      await Share.share(
-        finalText,
-        subject: 'CHAOS VISION - ${widget.object.alternateName}',
-      );
-    } catch (e) {
-      _toast('共有エラー');
-    }
+    await ShareService.shareScannedObject(context, widget.object);
   }
 
   void _toast(String msg) {
