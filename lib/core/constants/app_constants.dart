@@ -8,8 +8,8 @@ class AppConstants {
   static const String openaiApiUrl = 'https://api.openai.com/v1/chat/completions';
   static const Duration apiTimeout = Duration(seconds: 30);
   
-  // OpenAI APIキー（実機テスト用）
-  static const String openaiApiKey = 'REDACTED_OPENAI_KEY';
+  // OpenAI APIキー（ビルド時に --dart-define=OPENAI_API_KEY=... で渡す）
+  static const String openaiApiKey = String.fromEnvironment('OPENAI_API_KEY', defaultValue: '');
   
   // 物体検出設定
   static const double detectionConfidence = 0.5;
