@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import '../magic_circle_widget.dart';
 import 'wax_stamp.dart';
 
 class CodexImageFrame extends StatelessWidget {
@@ -51,35 +52,64 @@ class CodexImageFrame extends StatelessWidget {
                   ),
                 ),
                 child: ClipRect(
-                  child: FutureBuilder<String?>(
-                    future: imagePathFuture,
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData || snapshot.data == null) {
-                        return Container(
-                          color: AppColors.inkDeeper,
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.broken_image,
-                            color: AppColors.boneDim,
-                            size: 32,
-                          ),
-                        );
-                      }
-                      return Image.file(
-                        File(snapshot.data!),
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: AppColors.inkDeeper,
-                          alignment: Alignment.center,
-                          child: const Icon(
-                            Icons.broken_image,
-                            color: AppColors.boneDim,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ColorFiltered(
+                        colorFilter: ColorFilter.mode(
+                          accent.withValues(alpha: 0.4),
+                          BlendMode.color,
+                        ),
+                        child: FutureBuilder<String?>(
+                          future: imagePathFuture,
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData || snapshot.data == null) {
+                              return Container(
+                                color: AppColors.inkDeeper,
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.broken_image,
+                                  color: AppColors.boneDim,
+                                  size: 32,
+                                ),
+                              );
+                            }
+                            return Image.file(
+                              File(snapshot.data!),
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
+                              errorBuilder: (_, __, ___) => Container(
+                                color: AppColors.inkDeeper,
+                                alignment: Alignment.center,
+                                child: const Icon(
+                                  Icons.broken_image,
+                                  color: AppColors.boneDim,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          child: Center(
+                            child: FractionallySizedBox(
+                              widthFactor: 0.78,
+                              heightFactor: 0.78,
+                              child: Opacity(
+                                opacity: 0.22,
+                                child: MagicCircleWidget(
+                                  color: accent,
+                                  animate: false,
+                                  strokeWidth: 1.4,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
                 ),
               ),
