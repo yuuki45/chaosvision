@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../shared/models/scanned_object.dart';
+import '../../shared/widgets/codex/codex_loader.dart';
 import '../../shared/widgets/codex/share_card.dart';
 import '../constants/app_colors.dart';
 
@@ -27,6 +28,13 @@ class ShareService {
     final messenger = ScaffoldMessenger.maybeOf(context);
     final overlay = Overlay.maybeOf(context, rootOverlay: true);
     final origin = _shareOrigin(context);
+
+    OverlayEntry? loader;
+    if (overlay != null) {
+      loader = OverlayEntry(builder: (_) => const _ShareLoader());
+      overlay.insert(loader);
+    }
+
     try {
       debugPrint('ShareService: 1) reading image bytes');
       final imageBytes = await _readImageBytes(object);
@@ -55,6 +63,11 @@ class ShareService {
       final file = await _writeTempPng(pngBytes, object.id);
       debugPrint('ShareService:    path=${file.path}');
 
+      // Dismiss the codex loader before the system sheet appears so we
+      // don't fight UIActivityViewController's modal.
+      loader?.remove();
+      loader = null;
+
       debugPrint('ShareService: 5) invoking system share sheet');
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'image/png')],
@@ -67,6 +80,8 @@ class ShareService {
       debugPrint('ShareService: error: $e');
       debugPrint('$st');
       _toast(messenger, '共有エラー: $e');
+    } finally {
+      loader?.remove();
     }
   }
 
@@ -206,6 +221,7 @@ $shortDesc
 #CHAOSVISION #中二スキャナー''';
   }
 
+  // ─── Loading overlay ────────────────────────────────────────────────
   static void _toast(ScaffoldMessengerState? messenger, String msg) {
     if (messenger == null) return;
     messenger.showSnackBar(
@@ -219,6 +235,24 @@ $shortDesc
             color: AppColors.bone,
             letterSpacing: 1.5,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ShareLoader extends StatelessWidget {
+  const _ShareLoader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.inkDeeper.withValues(alpha: 0.78),
+      child: const Center(
+        child: CodexLoader(
+          label: '封 を 解 い て お る',
+          sublabel: 'PREPARING THE DISPATCH',
+          size: 96,
         ),
       ),
     );

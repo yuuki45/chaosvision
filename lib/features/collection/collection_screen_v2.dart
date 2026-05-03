@@ -7,6 +7,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/services/storage_service.dart';
 import '../../shared/models/scanned_object.dart';
+import '../../shared/widgets/codex/codex_loader.dart';
 import '../../shared/widgets/codex/grain_overlay.dart';
 import '../../shared/widgets/codex/grimoire_card.dart';
 import '../../shared/widgets/codex/kanji_backdrop.dart';
@@ -287,9 +288,10 @@ class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
                 Expanded(
                   child: _isLoading
                       ? const Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.goldLeaf,
-                            strokeWidth: 2,
+                          child: CodexLoader(
+                            label: '神 器 を 召 喚 中',
+                            sublabel: 'MANIFESTING ARTIFACTS',
+                            size: 84,
                           ),
                         )
                       : _objects.isEmpty
@@ -910,16 +912,9 @@ class _Grid extends StatelessWidget {
       itemBuilder: (context, index) {
         if (index >= objects.length) {
           return const Padding(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.all(12),
             child: Center(
-              child: SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(
-                  color: AppColors.goldLeaf,
-                  strokeWidth: 2,
-                ),
-              ),
+              child: CodexLoader(size: 36),
             ),
           );
         }

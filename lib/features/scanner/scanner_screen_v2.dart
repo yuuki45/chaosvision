@@ -336,14 +336,77 @@ class _Vignette extends StatelessWidget {
   }
 }
 
-class _RiteCaption extends StatelessWidget {
+class _RiteCaption extends StatefulWidget {
   final bool scanning;
   const _RiteCaption({required this.scanning});
 
   @override
+  State<_RiteCaption> createState() => _RiteCaptionState();
+}
+
+class _RiteCaptionState extends State<_RiteCaption> {
+  static const _phases = <(String, String)>[
+    ('霊 視 受 信 中', 'RECEIVING APPARITION'),
+    ('真 名 解 読 中', 'DECODING TRUE NAME'),
+    ('属 性 鑑 定 中', 'APPRAISING ATTRIBUTE'),
+    ('封 印 生 成 中', 'FORGING SEAL'),
+  ];
+
+  int _phase = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.scanning) _start();
+  }
+
+  @override
+  void didUpdateWidget(covariant _RiteCaption oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.scanning && !oldWidget.scanning) {
+      _start();
+    } else if (!widget.scanning && oldWidget.scanning) {
+      _stop();
+    }
+  }
+
+  void _start() {
+    _phase = 0;
+    _timer?.cancel();
+    _timer =
+        Timer.periodic(const Duration(milliseconds: 750), (_) {
+      if (!mounted || !widget.scanning) return;
+      // Pin on the final phase rather than looping.
+      if (_phase < _phases.length - 1) {
+        setState(() => _phase++);
+      }
+    });
+  }
+
+  void _stop() {
+    _timer?.cancel();
+    _timer = null;
+    if (mounted) setState(() => _phase = 0);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final accent =
-        scanning ? AppColors.bloodBright : AppColors.goldLeaf;
+        widget.scanning ? AppColors.bloodBright : AppColors.goldLeaf;
+    final jp = widget.scanning
+        ? _phases[_phase].$1
+        : '異 界 の 神 器 を 視 よ';
+    final en = widget.scanning
+        ? '${_phases[_phase].$2}...'
+        : 'WITNESS THE ARTIFACT BEYOND';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -358,19 +421,25 @@ class _RiteCaption extends StatelessWidget {
                 children: [
                   Container(width: 18, height: 1, color: AppColors.goldTarnish),
                   const SizedBox(width: 12),
-                  Text(
-                    scanning ? '神 器 の 真 名 を 解 読 中' : '異 界 の 神 器 を 視 よ',
-                    style: GoogleFonts.shipporiMincho(
-                      fontSize: 14,
-                      color: AppColors.bone,
-                      letterSpacing: 6,
-                      fontWeight: FontWeight.w600,
-                      height: 1.0,
-                    ),
-                    strutStyle: const StrutStyle(
-                      forceStrutHeight: true,
-                      height: 1.0,
-                      fontSize: 14,
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 280),
+                    transitionBuilder: (child, anim) =>
+                        FadeTransition(opacity: anim, child: child),
+                    child: Text(
+                      jp,
+                      key: ValueKey('jp-$jp'),
+                      style: GoogleFonts.shipporiMincho(
+                        fontSize: 14,
+                        color: AppColors.bone,
+                        letterSpacing: 6,
+                        fontWeight: FontWeight.w600,
+                        height: 1.0,
+                      ),
+                      strutStyle: const StrutStyle(
+                        forceStrutHeight: true,
+                        height: 1.0,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -382,20 +451,24 @@ class _RiteCaption extends StatelessWidget {
           const SizedBox(height: 18),
           SizedBox(
             height: 14,
-            child: Text(
-              scanning
-                  ? 'DECODING THE TRUE NAME...'
-                  : 'WITNESS THE ARTIFACT BEYOND',
-              style: GoogleFonts.jetBrainsMono(
-                fontSize: 10,
-                color: accent.withValues(alpha: 0.85),
-                letterSpacing: 3.5,
-                height: 1.0,
-              ),
-              strutStyle: const StrutStyle(
-                forceStrutHeight: true,
-                height: 1.0,
-                fontSize: 10,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 280),
+              transitionBuilder: (child, anim) =>
+                  FadeTransition(opacity: anim, child: child),
+              child: Text(
+                en,
+                key: ValueKey('en-$en'),
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 10,
+                  color: accent.withValues(alpha: 0.85),
+                  letterSpacing: 3.5,
+                  height: 1.0,
+                ),
+                strutStyle: const StrutStyle(
+                  forceStrutHeight: true,
+                  height: 1.0,
+                  fontSize: 10,
+                ),
               ),
             ),
           ),
