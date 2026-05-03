@@ -21,7 +21,7 @@ import '../../shared/widgets/codex/rite_loading.dart';
 import '../../shared/widgets/codex/ritual_shutter.dart';
 import '../../shared/widgets/codex/rune_frame.dart';
 
-import '../scan_result/scan_result_screen.dart';
+import '../scan_result/scan_result_screen_v2.dart';
 
 class ScannerScreenV2 extends ConsumerStatefulWidget {
   const ScannerScreenV2({super.key});
@@ -146,7 +146,7 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
       if (!mounted) return;
       await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => ScanResultScreen(scannedObject: obj),
+          builder: (_) => ScanResultScreenV2(scannedObject: obj),
         ),
       );
     } catch (e) {
