@@ -18,7 +18,7 @@ import '../../shared/widgets/codex/scanline_overlay.dart';
 import '../../shared/widgets/codex/spine_label.dart';
 
 import '../about/app_info_screen.dart';
-import '../collection/collection_screen.dart';
+import '../collection/collection_screen_v2.dart';
 import '../scanner/scanner_screen_v2.dart';
 
 class HomeScreenV2 extends StatefulWidget {
@@ -187,7 +187,7 @@ class _HomeScreenV2State extends State<HomeScreenV2> {
                               subLabel: '神器図鑑',
                               description: 'Witness the truths thou hast collected.',
                               tone: TileTone.secondary,
-                              onPressed: () => _push(const CollectionScreen()),
+                              onPressed: () => _push(const CollectionScreenV2()),
                             ),
                             IndexTile(
                               index: '03',
