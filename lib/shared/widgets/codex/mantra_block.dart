@@ -12,20 +12,22 @@ class MantraBlock extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                '「',
-                style: GoogleFonts.shipporiMincho(
-                  fontSize: 28,
-                  color: AppColors.bloodBright.withValues(alpha: 0.7),
-                  height: 1,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '「',
+                  style: GoogleFonts.shipporiMincho(
+                    fontSize: 28,
+                    color: AppColors.bloodBright.withValues(alpha: 0.7),
+                    height: 1,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(
+                const SizedBox(width: 4),
+                Text(
                   '現実は── 此の眼に映る幻にすぎぬ',
                   style: GoogleFonts.shipporiMincho(
                     fontSize: 17,
@@ -34,19 +36,20 @@ class MantraBlock extends StatelessWidget {
                     letterSpacing: 1.5,
                     height: 1.6,
                   ),
-                  textAlign: TextAlign.right,
+                  maxLines: 1,
+                  softWrap: false,
                 ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '」',
-                style: GoogleFonts.shipporiMincho(
-                  fontSize: 28,
-                  color: AppColors.bloodBright.withValues(alpha: 0.7),
-                  height: 1,
+                const SizedBox(width: 4),
+                Text(
+                  '」',
+                  style: GoogleFonts.shipporiMincho(
+                    fontSize: 28,
+                    color: AppColors.bloodBright.withValues(alpha: 0.7),
+                    height: 1,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 6),
           Text(

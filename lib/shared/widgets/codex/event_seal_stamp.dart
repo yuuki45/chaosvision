@@ -25,7 +25,10 @@ class EventSealStamp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Transform.rotate(
       angle: 0.018,
-      child: Container(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: AppColors.blood.withValues(alpha: 0.18),
@@ -89,6 +92,7 @@ class EventSealStamp extends StatelessWidget {
               ),
             ],
           ],
+        ),
         ),
       ),
     );

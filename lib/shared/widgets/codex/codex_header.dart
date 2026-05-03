@@ -38,37 +38,45 @@ class CodexHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Transform.translate(
-            offset: const Offset(-2, 0),
-            child: Text(
-              'CHAOS',
-              style: GoogleFonts.bodoniModa(
-                fontSize: 72,
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.w800,
-                color: AppColors.bone,
-                height: 0.92,
-                letterSpacing: -1.5,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Transform.translate(
+              offset: const Offset(-2, 0),
+              child: Text(
+                'CHAOS',
+                style: GoogleFonts.bodoniModa(
+                  fontSize: 72,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.bone,
+                  height: 0.92,
+                  letterSpacing: -1.5,
+                ),
               ),
             ),
           ),
-          Transform.translate(
-            offset: const Offset(36, -8),
-            child: Text(
-              'VISION',
-              style: GoogleFonts.bodoniModa(
-                fontSize: 72,
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.w800,
-                color: AppColors.bloodBright,
-                height: 0.92,
-                letterSpacing: -1.5,
-                shadows: [
-                  Shadow(
-                    color: AppColors.blood.withValues(alpha: 0.6),
-                    blurRadius: 24,
-                  ),
-                ],
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Transform.translate(
+              offset: const Offset(36, -8),
+              child: Text(
+                'VISION',
+                style: GoogleFonts.bodoniModa(
+                  fontSize: 72,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.bloodBright,
+                  height: 0.92,
+                  letterSpacing: -1.5,
+                  shadows: [
+                    Shadow(
+                      color: AppColors.blood.withValues(alpha: 0.6),
+                      blurRadius: 24,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -111,21 +119,25 @@ class CodexHeader extends StatelessWidget {
           width: 0.7,
         ),
       ),
-      child: Row(
-        children: [
-          for (int i = 0; i < cells.length; i++) ...[
-            cells[i],
-            if (i < cells.length - 1) ...[
-              const SizedBox(width: 12),
-              Container(
-                width: 1,
-                height: 18,
-                color: AppColors.goldTarnish.withValues(alpha: 0.3),
-              ),
-              const SizedBox(width: 12),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Row(
+          children: [
+            for (int i = 0; i < cells.length; i++) ...[
+              cells[i],
+              if (i < cells.length - 1) ...[
+                const SizedBox(width: 12),
+                Container(
+                  width: 1,
+                  height: 18,
+                  color: AppColors.goldTarnish.withValues(alpha: 0.3),
+                ),
+                const SizedBox(width: 12),
+              ],
             ],
           ],
-        ],
+        ),
       ),
     );
   }
