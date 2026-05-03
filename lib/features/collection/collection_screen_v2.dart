@@ -12,7 +12,7 @@ import '../../shared/widgets/codex/grimoire_card.dart';
 import '../../shared/widgets/codex/kanji_backdrop.dart';
 import '../../shared/widgets/codex/scanline_overlay.dart';
 
-import 'object_detail_screen.dart';
+import 'object_detail_screen_v2.dart';
 
 class CollectionScreenV2 extends ConsumerStatefulWidget {
   const CollectionScreenV2({super.key});
@@ -293,7 +293,7 @@ class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
                                 final result = await Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (_) =>
-                                        ObjectDetailScreen(object: obj),
+                                        ObjectDetailScreenV2(object: obj),
                                   ),
                                 );
                                 if (result is Map &&
