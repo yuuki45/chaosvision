@@ -55,7 +55,7 @@ class _IndexTileState extends State<IndexTile>
       case TileTone.secondary:
         return AppColors.goldLeaf;
       case TileTone.tertiary:
-        return AppColors.violetDeep;
+        return AppColors.frost;
     }
   }
 
@@ -66,7 +66,7 @@ class _IndexTileState extends State<IndexTile>
       case TileTone.secondary:
         return AppColors.goldTarnish;
       case TileTone.tertiary:
-        return AppColors.boneDim;
+        return AppColors.frostDeep;
     }
   }
 

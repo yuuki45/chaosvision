@@ -61,4 +61,6 @@ class AppColors {
   static const Color bone = Color(0xFFE8DCC4);
   static const Color boneDim = Color(0xFF6B5F4D);
   static const Color violetDeep = Color(0xFF2D1A4F);
+  static const Color frost = Color(0xFF7FBED1);
+  static const Color frostDeep = Color(0xFF3A6B7E);
 }
