@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -102,6 +103,7 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
 
   Future<void> _captureAndAnalyze() async {
     if (_isScanning || !_isInitialized) return;
+    HapticFeedback.heavyImpact();
     setState(() => _isScanning = true);
 
     try {
@@ -145,16 +147,45 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
       await _storageService.saveScannedObject(obj);
 
       if (!mounted) return;
-      await Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ScanResultScreenV2(scannedObject: obj),
-        ),
-      );
+      HapticFeedback.mediumImpact();
+      await Navigator.of(context).push(_revealRoute(obj));
     } catch (e) {
       _toast('スキャンエラー: $e');
     } finally {
       if (mounted) setState(() => _isScanning = false);
     }
+  }
+
+  Route<dynamic> _revealRoute(ScannedObject obj) {
+    return PageRouteBuilder<dynamic>(
+      transitionDuration: const Duration(milliseconds: 720),
+      reverseTransitionDuration: const Duration(milliseconds: 480),
+      pageBuilder: (_, __, ___) => ScanResultScreenV2(scannedObject: obj),
+      transitionsBuilder: (context, animation, secondary, child) {
+        return AnimatedBuilder(
+          animation: animation,
+          builder: (context, _) {
+            final t =
+                Curves.easeOutCubic.transform(animation.value.clamp(0.0, 1.0));
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: ColoredBox(
+                    color: AppColors.inkDeeper.withValues(alpha: t),
+                  ),
+                ),
+                Positioned.fill(
+                  child: ClipPath(
+                    clipper: _CircularRevealClipper(progress: t),
+                    child: Opacity(opacity: t, child: child),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   void _toast(String msg) {
@@ -756,4 +787,24 @@ class _RitualPainter extends CustomPainter {
       oldDelegate.midRot != midRot ||
       oldDelegate.innerRot != innerRot ||
       oldDelegate.pulse != pulse;
+}
+
+class _CircularRevealClipper extends CustomClipper<Path> {
+  final double progress;
+  _CircularRevealClipper({required this.progress});
+
+  @override
+  Path getClip(Size size) {
+    // Origin: roughly the viewfinder center on the scanner screen.
+    final center = Offset(size.width / 2, size.height * 0.42);
+    final maxRadius = math.sqrt(
+      math.pow(size.width, 2) + math.pow(size.height, 2),
+    ).toDouble();
+    final radius = maxRadius * progress;
+    return Path()..addOval(Rect.fromCircle(center: center, radius: radius));
+  }
+
+  @override
+  bool shouldReclip(covariant _CircularRevealClipper oldClipper) =>
+      oldClipper.progress != progress;
 }
