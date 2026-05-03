@@ -102,6 +102,18 @@ APIキーは `--dart-define=OPENAI_API_KEY=...` か `.env` で渡す（後述の
 
 ## Reference Files
 
+詳しい仕様 / 設計の説明は `docs/` 以下の長文ドキュメントにある。
+新しい話題に着手する前に該当ドキュメントを参照すること。
+
+- `docs/README.md` — 索引と現在のスナップショット
+- `docs/architecture.md` — レイヤ構成、データフロー、技術スタック
+- `docs/design-system.md` — 「禁忌教典」ビジュアル言語仕様
+- `docs/screens.md` — 9 画面の概要と遷移
+- `docs/services.md` — Service 層の責務
+- `docs/data-model.md` — Hive スキーマと正規化
+- `docs/decisions.md` — D-001 〜 D-010 の設計決定ログ
+
+その他:
 - `PROJECT_SPEC.md` — 元仕様書（日本語、機能一覧・UI構造・マネタイズ案）
 - `readme.md` — ユーザー向け feature 説明
 - `README_SETUP.md` — APIキー設定手順
