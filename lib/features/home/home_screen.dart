@@ -10,7 +10,7 @@ import '../../shared/widgets/special_event_banner.dart';
 
 import '../scanner/scanner_screen.dart';
 import '../collection/collection_screen.dart';
-import '../debug/event_test_screen.dart';
+
 import '../about/app_info_screen.dart';
 
 class HomeScreen extends StatefulWidget {
