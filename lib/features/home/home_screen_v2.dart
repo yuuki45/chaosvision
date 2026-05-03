@@ -19,7 +19,7 @@ import '../../shared/widgets/codex/spine_label.dart';
 
 import '../about/app_info_screen.dart';
 import '../collection/collection_screen.dart';
-import '../scanner/scanner_screen.dart';
+import '../scanner/scanner_screen_v2.dart';
 
 class HomeScreenV2 extends StatefulWidget {
   const HomeScreenV2({super.key});
@@ -178,7 +178,7 @@ class _HomeScreenV2State extends State<HomeScreenV2> {
                               subLabel: '開　眼',
                               description: 'Decode the veil before you.',
                               tone: TileTone.primary,
-                              onPressed: () => _push(const ScannerScreen()),
+                              onPressed: () => _push(const ScannerScreenV2()),
                             ),
                             IndexTile(
                               index: '02',
