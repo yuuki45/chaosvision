@@ -17,6 +17,14 @@ class PaginatedResult {
   });
 }
 
+// 神器図鑑の並び替え順
+enum SortMode {
+  newest, // 新 → 古
+  oldest, // 古 → 新
+  rarityDesc, // 神 → 常
+  attribute, // 属性別 (炎 氷 雷 風 地 水 光 闇 無)
+}
+
 class StorageService {
   static StorageService? _instance;
   static StorageService get instance => _instance ??= StorageService._();
@@ -104,14 +112,37 @@ class StorageService {
     String? attributeFilter,
     String? rarityFilter,
     String? searchQuery,
+    SortMode sortMode = SortMode.newest,
   }) {
     if (_scannedObjectsBox == null) {
       return PaginatedResult(objects: [], totalCount: 0, hasMore: false);
     }
 
     // 全オブジェクトを取得してソート
-    final allObjects = _scannedObjectsBox!.values.toList()
-      ..sort((a, b) => b.scannedAt.compareTo(a.scannedAt));
+    final allObjects = _scannedObjectsBox!.values.toList();
+    switch (sortMode) {
+      case SortMode.newest:
+        allObjects.sort((a, b) => b.scannedAt.compareTo(a.scannedAt));
+        break;
+      case SortMode.oldest:
+        allObjects.sort((a, b) => a.scannedAt.compareTo(b.scannedAt));
+        break;
+      case SortMode.rarityDesc:
+        allObjects.sort((a, b) {
+          final r = _rarityRank(b.rarity).compareTo(_rarityRank(a.rarity));
+          if (r != 0) return r;
+          return b.scannedAt.compareTo(a.scannedAt);
+        });
+        break;
+      case SortMode.attribute:
+        allObjects.sort((a, b) {
+          final r =
+              _attributeRank(a.attribute).compareTo(_attributeRank(b.attribute));
+          if (r != 0) return r;
+          return b.scannedAt.compareTo(a.scannedAt);
+        });
+        break;
+    }
 
     // フィルタリング適用
     final filteredObjects = allObjects.where((object) {
@@ -323,6 +354,29 @@ class StorageService {
 
     // 既に日本語の場合はそのまま返す
     return rarity;
+  }
+
+  int _rarityRank(String rarity) {
+    switch (_normalizeRarity(rarity)) {
+      case 'ミシック':
+        return 5;
+      case 'レジェンダリー':
+        return 4;
+      case 'エピック':
+        return 3;
+      case 'レア':
+        return 2;
+      case 'コモン':
+        return 1;
+      default:
+        return 0;
+    }
+  }
+
+  int _attributeRank(String attribute) {
+    const order = ['炎', '氷', '雷', '風', '地', '水', '光', '闇', '無'];
+    final i = order.indexOf(attribute);
+    return i < 0 ? 99 : i;
   }
 
   void dispose() {

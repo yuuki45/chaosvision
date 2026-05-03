@@ -24,13 +24,14 @@ class CollectionScreenV2 extends ConsumerStatefulWidget {
 class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
     with TickerProviderStateMixin {
   final StorageService _storageService = StorageService.instance;
-  final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   List<ScannedObject> _objects = [];
   String _selectedAttribute = 'すべて';
   String _selectedRarity = 'すべて';
-  String _searchQuery = '';
+  SortMode _sortMode = SortMode.newest;
+  Map<String, int> _rarityStats = const {};
+  int _grandTotal = 0;
 
   static const int _pageSize = 12;
   int _currentOffset = 0;
@@ -48,7 +49,6 @@ class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
 
   @override
   void dispose() {
-    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -69,18 +69,23 @@ class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
       _objects.clear();
     });
     try {
+      final stats = _storageService.rarityStats;
+      final grand =
+          stats.values.fold<int>(0, (sum, v) => sum + v);
       final result = _storageService.getObjectsWithFilters(
         limit: _pageSize,
         offset: 0,
         attributeFilter: _selectedAttribute,
         rarityFilter: _selectedRarity,
-        searchQuery: _searchQuery.isEmpty ? null : _searchQuery,
+        sortMode: _sortMode,
       );
       setState(() {
         _objects = result.objects;
         _totalCount = result.totalCount;
         _hasMore = result.hasMore;
         _currentOffset = _pageSize;
+        _rarityStats = stats;
+        _grandTotal = grand;
         _isLoading = false;
       });
     } catch (e) {
@@ -98,7 +103,7 @@ class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
         offset: _currentOffset,
         attributeFilter: _selectedAttribute,
         rarityFilter: _selectedRarity,
-        searchQuery: _searchQuery.isEmpty ? null : _searchQuery,
+        sortMode: _sortMode,
       );
       setState(() {
         _objects.addAll(result.objects);
@@ -109,6 +114,20 @@ class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
     } catch (_) {
       setState(() => _isLoadingMore = false);
     }
+  }
+
+  void _toggleRarity(String rarity) {
+    setState(() {
+      _selectedRarity = _selectedRarity == rarity ? 'すべて' : rarity;
+    });
+    _resetAndReload();
+  }
+
+  void _cycleSort() {
+    setState(() {
+      _sortMode = SortMode.values[(_sortMode.index + 1) % SortMode.values.length];
+    });
+    _resetAndReload();
   }
 
   void _resetAndReload() => _loadObjects();
@@ -232,23 +251,17 @@ class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
                     .animate()
                     .fadeIn(duration: 400.ms)
                     .slideY(begin: -0.2, end: 0, duration: 500.ms),
+                const SizedBox(height: 10),
+                _StatusPanel(
+                  rarityStats: _rarityStats,
+                  total: _grandTotal,
+                  selected: _selectedRarity,
+                  onTap: _toggleRarity,
+                ).animate().fadeIn(duration: 400.ms, delay: 200.ms),
                 const SizedBox(height: 8),
-                _LedgerSearch(
-                  controller: _searchController,
-                  onChanged: (v) {
-                    setState(() => _searchQuery = v);
-                    Future.delayed(
-                      const Duration(milliseconds: 500),
-                      () {
-                        if (_searchQuery == v) _resetAndReload();
-                      },
-                    );
-                  },
-                ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
-                const SizedBox(height: 12),
-                _FilterStrip(
+                _SecondaryFilters(
                   attribute: _selectedAttribute,
-                  rarity: _selectedRarity,
+                  sortMode: _sortMode,
                   onAttribute: () => _showFilterModal(
                     title: '属  性  で  絞  る',
                     options: ['すべて', ...AppConstants.attributes],
@@ -256,25 +269,21 @@ class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
                     onSelect: (v) =>
                         setState(() => _selectedAttribute = v),
                   ),
-                  onRarity: () => _showFilterModal(
-                    title: '階  級  で  絞  る',
-                    options: ['すべて', ...AppConstants.rarityLevels],
-                    current: _selectedRarity,
-                    onSelect: (v) => setState(() => _selectedRarity = v),
-                    useRarityColors: true,
-                  ),
+                  onSort: _cycleSort,
                   onReset: (_selectedAttribute != 'すべて' ||
-                          _selectedRarity != 'すべて')
+                          _selectedRarity != 'すべて' ||
+                          _sortMode != SortMode.newest)
                       ? () {
                           setState(() {
                             _selectedAttribute = 'すべて';
                             _selectedRarity = 'すべて';
+                            _sortMode = SortMode.newest;
                           });
                           _resetAndReload();
                         }
                       : null,
-                ).animate().fadeIn(duration: 400.ms, delay: 200.ms),
-                const SizedBox(height: 14),
+                ).animate().fadeIn(duration: 400.ms, delay: 250.ms),
+                const SizedBox(height: 12),
                 Expanded(
                   child: _isLoading
                       ? const Center(
@@ -441,85 +450,27 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _LedgerSearch extends StatelessWidget {
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
+const _kRarityOrder = ['コモン', 'レア', 'エピック', 'レジェンダリー', 'ミシック'];
 
-  const _LedgerSearch({required this.controller, required this.onChanged});
+const _kRarityKanji = {
+  'コモン': '常',
+  'レア': '稀',
+  'エピック': '叙',
+  'レジェンダリー': '伝',
+  'ミシック': '神',
+};
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Container(
-        height: 42,
-        decoration: BoxDecoration(
-          color: AppColors.inkBlack.withValues(alpha: 0.7),
-          border: Border.all(
-            color: AppColors.goldTarnish.withValues(alpha: 0.5),
-            width: 0.7,
-          ),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 14),
-            const Icon(
-              Icons.search,
-              color: AppColors.goldLeaf,
-              size: 16,
-            ),
-            const SizedBox(width: 12),
-            Container(
-              width: 1,
-              height: 18,
-              color: AppColors.goldTarnish.withValues(alpha: 0.4),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: controller,
-                onChanged: onChanged,
-                style: GoogleFonts.jetBrainsMono(
-                  color: AppColors.bone,
-                  fontSize: 12,
-                  letterSpacing: 1.5,
-                ),
-                cursorColor: AppColors.bloodBright,
-                decoration: InputDecoration(
-                  hintText: 'QUERY  THE  GRIMOIRE...',
-                  hintStyle: GoogleFonts.jetBrainsMono(
-                    color: AppColors.boneDim,
-                    fontSize: 11,
-                    letterSpacing: 2.5,
-                  ),
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-          ],
-        ),
-      ),
-    );
-  }
-}
+class _StatusPanel extends StatelessWidget {
+  final Map<String, int> rarityStats;
+  final int total;
+  final String selected;
+  final ValueChanged<String> onTap;
 
-class _FilterStrip extends StatelessWidget {
-  final String attribute;
-  final String rarity;
-  final VoidCallback onAttribute;
-  final VoidCallback onRarity;
-  final VoidCallback? onReset;
-
-  const _FilterStrip({
-    required this.attribute,
-    required this.rarity,
-    required this.onAttribute,
-    required this.onRarity,
-    required this.onReset,
+  const _StatusPanel({
+    required this.rarityStats,
+    required this.total,
+    required this.selected,
+    required this.onTap,
   });
 
   @override
@@ -530,21 +481,185 @@ class _FilterStrip extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         children: [
-          _FilterChip(
+          _RarityPill(
+            kanji: '全',
+            count: total,
+            isSelected: selected == 'すべて',
+            color: AppColors.goldLeaf,
+            onTap: () => onTap('すべて'),
+          ),
+          const SizedBox(width: 6),
+          for (final rarity in _kRarityOrder) ...[
+            _RarityPill(
+              kanji: _kRarityKanji[rarity] ?? '？',
+              count: rarityStats[rarity] ?? 0,
+              isSelected: selected == rarity,
+              color: AppColors.rarityColors[rarity] ?? AppColors.goldLeaf,
+              onTap: () => onTap(rarity),
+            ),
+            const SizedBox(width: 6),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _RarityPill extends StatelessWidget {
+  final String kanji;
+  final int count;
+  final bool isSelected;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _RarityPill({
+    required this.kanji,
+    required this.count,
+    required this.isSelected,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final dim = count == 0 && kanji != '全';
+    final accentColor = isSelected
+        ? color
+        : (dim ? AppColors.boneDim : color);
+    return GestureDetector(
+      onTap: dim ? null : onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color.withValues(alpha: 0.2)
+              : AppColors.inkBlack.withValues(alpha: 0.7),
+          border: Border.all(
+            color: isSelected
+                ? color
+                : (dim
+                    ? AppColors.goldTarnish.withValues(alpha: 0.25)
+                    : AppColors.goldTarnish.withValues(alpha: 0.55)),
+            width: isSelected ? 1.0 : 0.7,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.32),
+                    blurRadius: 14,
+                    spreadRadius: -3,
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              kanji,
+              style: GoogleFonts.shipporiMincho(
+                fontSize: 14,
+                color: accentColor,
+                fontWeight: FontWeight.w800,
+                height: 1.0,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Container(
+              width: 1,
+              height: 12,
+              color: AppColors.goldTarnish.withValues(alpha: 0.35),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              count.toString(),
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 11,
+                color: dim ? AppColors.boneDim : AppColors.bone,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.6,
+                height: 1.0,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SecondaryFilters extends StatelessWidget {
+  final String attribute;
+  final SortMode sortMode;
+  final VoidCallback onAttribute;
+  final VoidCallback onSort;
+  final VoidCallback? onReset;
+
+  const _SecondaryFilters({
+    required this.attribute,
+    required this.sortMode,
+    required this.onAttribute,
+    required this.onSort,
+    required this.onReset,
+  });
+
+  String get _sortKanji {
+    switch (sortMode) {
+      case SortMode.newest:
+        return '新';
+      case SortMode.oldest:
+        return '古';
+      case SortMode.rarityDesc:
+        return '級';
+      case SortMode.attribute:
+        return '属';
+    }
+  }
+
+  String get _sortRomaji {
+    switch (sortMode) {
+      case SortMode.newest:
+        return 'NEWEST';
+      case SortMode.oldest:
+        return 'OLDEST';
+      case SortMode.rarityDesc:
+        return 'RARITY';
+      case SortMode.attribute:
+        return 'ATTRIBUTE';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final attrActive = attribute != 'すべて';
+    final attrAccent =
+        AppColors.attributeColors[attribute] ?? AppColors.goldLeaf;
+    return SizedBox(
+      height: 34,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        children: [
+          _PillButton(
             label: '属性',
             value: attribute,
-            active: attribute != 'すべて',
-            accent: AppColors.attributeColors[attribute] ??
-                AppColors.goldLeaf,
+            active: attrActive,
+            accent: attrAccent,
             onTap: onAttribute,
           ),
           const SizedBox(width: 8),
-          _FilterChip(
-            label: '階級',
-            value: rarity,
-            active: rarity != 'すべて',
-            accent: AppColors.rarityColors[rarity] ?? AppColors.goldLeaf,
-            onTap: onRarity,
+          _PillButton(
+            label: '並',
+            value: '$_sortKanji  ─  $_sortRomaji',
+            active: sortMode != SortMode.newest,
+            accent: AppColors.frost,
+            onTap: onSort,
+            trailing: const Icon(
+              Icons.sync,
+              color: AppColors.frost,
+              size: 12,
+            ),
           ),
           if (onReset != null) ...[
             const SizedBox(width: 8),
@@ -589,19 +704,21 @@ class _FilterStrip extends StatelessWidget {
   }
 }
 
-class _FilterChip extends StatelessWidget {
+class _PillButton extends StatelessWidget {
   final String label;
   final String value;
   final bool active;
   final Color accent;
   final VoidCallback onTap;
+  final Widget? trailing;
 
-  const _FilterChip({
+  const _PillButton({
     required this.label,
     required this.value,
     required this.active,
     required this.accent,
     required this.onTap,
+    this.trailing,
   });
 
   @override
@@ -650,6 +767,10 @@ class _FilterChip extends StatelessWidget {
                 letterSpacing: 2,
               ),
             ),
+            if (trailing != null) ...[
+              const SizedBox(width: 8),
+              trailing!,
+            ],
           ],
         ),
       ),
