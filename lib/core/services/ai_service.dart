@@ -63,6 +63,9 @@ class AIService {
                   'type': 'image_url',
                   'image_url': {
                     'url': 'data:image/jpeg;base64,$base64Image',
+                    // gpt-4o-mini で画像を "low" 扱いにすると vision tokens が
+                    // 桁違いに削減される (≒1/10)。中二異名生成には精度十分。
+                    'detail': 'low',
                   },
                 },
               ],
@@ -413,8 +416,9 @@ class AIService {
         throw Exception('画像のデコードに失敗しました');
       }
 
-      // 画像サイズを制限（最大幅1024px、高さは比率維持）
-      const maxWidth = 1024;
+      // 画像サイズを制限（detail: 'low' で OpenAI 側が 512×512 に自動縮小するので、
+      // それ以上送信しても帯域の無駄。512px 上限にして転送量も節約する）
+      const maxWidth = 512;
       img.Image resizedImage;
       
       if (originalImage.width > maxWidth) {
