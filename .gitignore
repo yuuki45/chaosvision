@@ -39,9 +39,26 @@ migrate_working_dir/
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+.flutter-plugins-dependencies*
 .pub-cache/
 .pub/
 /build/
+ios/build/
+ios/Pods/
+ios/.symlinks/
+android/.gradle/
+android/build/
+android/app/build/
+
+# Generated mocks (regenerate with build_runner)
+**/*.mocks.dart
+
+# Tooling caches (Serena MCP, etc.)
+.serena/
+
+# Finder duplicates
+**/* 2
+**/* 2.*
 
 # Symbolication related
 app.*.symbols
