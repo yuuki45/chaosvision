@@ -5,7 +5,7 @@ import 'core/constants/app_constants.dart';
 import 'core/services/storage_service.dart';
 import 'core/services/image_cache_service.dart';
 import 'core/services/memory_monitor_service.dart';
-import 'features/home/home_screen.dart';
+import 'features/home/home_screen_v2.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,7 +62,7 @@ class _ChaosVisionAppState extends State<ChaosVisionApp>
     return MaterialApp(
       title: AppConstants.appName,
       theme: AppTheme.darkTheme,
-      home: const HomeScreen(),
+      home: const HomeScreenV2(),
       debugShowCheckedModeBanner: false,
     );
   }

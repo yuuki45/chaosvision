@@ -50,4 +50,15 @@ class AppColors {
   static const Color magicCircle = Color(0xFFD4AF37);
   static const Color scanBeam = Color(0xFF9370DB);
   static const Color glowEffect = Color(0xFFFFFFFF);
+
+  // ─── Forbidden Codex palette (v2 home) ───
+  static const Color inkBlack = Color(0xFF0A0805);
+  static const Color inkDeeper = Color(0xFF050302);
+  static const Color blood = Color(0xFF8B1A1A);
+  static const Color bloodBright = Color(0xFFC8102E);
+  static const Color goldTarnish = Color(0xFFA18540);
+  static const Color goldLeaf = Color(0xFFD4AF37);
+  static const Color bone = Color(0xFFE8DCC4);
+  static const Color boneDim = Color(0xFF6B5F4D);
+  static const Color violetDeep = Color(0xFF2D1A4F);
 }
