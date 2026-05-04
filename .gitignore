@@ -60,6 +60,15 @@ android/app/build/
 **/* 2
 **/* 2.*
 
+# Local-only secrets — Worker URL / APP_SECRET (Flutter dart-defines)
+secrets.json
+!secrets.json.example
+
+# Worker dev artifacts
+worker/node_modules/
+worker/.wrangler/
+worker/.dev.vars
+
 # Symbolication related
 app.*.symbols
 

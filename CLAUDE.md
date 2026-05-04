@@ -47,21 +47,29 @@ lib/
 
 ```bash
 flutter pub get
-flutter run --dart-define=OPENAI_API_KEY=sk-...   # 推奨：実機テスト
+
+# 開発実行: AI を使うには Cloudflare Worker proxy 経由 (worker/ 配下)。
+# secrets.json (gitignored) に CHAOS_WORKER_URL と CHAOS_APP_SECRET を入れる。
+# テンプレ: secrets.json.example
+flutter run -d <device> --dart-define-from-file=secrets.json
+
 dart analyze                                       # ← `flutter analyze` は環境依存でクラッシュするので dart 直叩き
 flutter test
-flutter test integration_test/
 flutter format .
 
 # Hive/JSON コード生成
 flutter pub run build_runner build --delete-conflicting-outputs
 
 # ビルド
-flutter build ipa --dart-define=OPENAI_API_KEY=sk-...
-flutter build apk --dart-define=OPENAI_API_KEY=sk-...
+flutter build ipa --dart-define-from-file=secrets.json
+flutter build apk --dart-define-from-file=secrets.json
 ```
 
-APIキーは `--dart-define=OPENAI_API_KEY=...` か `.env` で渡す（後述のセキュリティ問題参照）。
+AI 接続のキーはアプリに直に持たせず、`worker/` (Cloudflare Worker proxy) が
+OpenAI キーを保持する。アプリは `CHAOS_WORKER_URL` (Worker の URL) と
+`CHAOS_APP_SECRET` (Worker と共有する Bearer トークン) だけを持つ。
+両者とも未設定時は `_generateDummyFromImage` でダミーが返るのでオフライン
+開発もそのまま回る。
 
 ## Critical Notes
 

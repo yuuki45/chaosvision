@@ -10,78 +10,54 @@ import 'special_event_service.dart';
 class AIService {
   final Dio _dio;
   final SpecialEventService _eventService = SpecialEventService.instance;
-  static const String _apiKey = AppConstants.openaiApiKey;
+  static const String _workerUrl = AppConstants.workerBaseUrl;
+  static const String _appSecret = AppConstants.appSecret;
 
-  AIService() 
-    : _dio = Dio(BaseOptions(
-        baseUrl: AppConstants.openaiApiUrl,
-        connectTimeout: AppConstants.apiTimeout,
-        receiveTimeout: AppConstants.apiTimeout,
-      ));
+  AIService()
+      : _dio = Dio(BaseOptions(
+          connectTimeout: AppConstants.apiTimeout,
+          receiveTimeout: AppConstants.apiTimeout,
+        ));
 
-  /// APIキーが有効かチェック
-  bool get _hasValidApiKey => _apiKey.isNotEmpty && _apiKey != 'YOUR_OPENAI_API_KEY_HERE';
+  /// Worker URL + APP_SECRET の両方が揃っているかチェック
+  bool get _hasValidConfig => _workerUrl.isNotEmpty && _appSecret.isNotEmpty;
 
   /// 画像を解析して物体認識と中二病名前生成を同時に行う
+  ///
+  /// 通信先は OpenAI ではなく自前の Cloudflare Worker。
+  /// Worker が APP_SECRET を検証してから OpenAI に転送する。
   Future<Map<String, String>?> analyzeImageAndGenerate(String imagePath) async {
     try {
-      if (!_hasValidApiKey) {
-        // APIキーが設定されていない場合はダミーデータを返す
-        debugPrint('APIキーが設定されていないため、ダミーデータを返します');
+      if (!_hasValidConfig) {
+        debugPrint('Worker URL / APP_SECRET 未設定のためダミーを返します');
         return _generateDummyFromImage(imagePath);
       }
 
-      debugPrint('OpenAI APIで画像解析を開始...');
+      debugPrint('Worker proxy で画像解析を開始...');
 
       // 画像をリサイズしてBase64エンコード（メモリ最適化）
       final imageBytes = await _resizeImageForAPI(imagePath);
       final base64Image = base64Encode(imageBytes);
 
       final response = await _dio.post(
-        'https://api.openai.com/v1/chat/completions',
+        '$_workerUrl/scan',
         options: Options(
           headers: {
-            'Authorization': 'Bearer $_apiKey',
+            'Authorization': 'Bearer $_appSecret',
             'Content-Type': 'application/json',
           },
         ),
         data: {
-          'model': 'gpt-4o-mini', // より安価で高速なモデル
-          'messages': [
-            {
-              'role': 'system',
-              'content': _getImageAnalysisSystemPrompt(),
-            },
-            {
-              'role': 'user',
-              'content': [
-                {
-                  'type': 'text',
-                  'text': 'この画像の主な物体を認識して、中二病的な異名と設定を生成してください。',
-                },
-                {
-                  'type': 'image_url',
-                  'image_url': {
-                    'url': 'data:image/jpeg;base64,$base64Image',
-                    // gpt-4o-mini で画像を "low" 扱いにすると vision tokens が
-                    // 桁違いに削減される (≒1/10)。中二異名生成には精度十分。
-                    'detail': 'low',
-                  },
-                },
-              ],
-            }
-          ],
-          'max_tokens': 300,
-          'temperature': 0.8,
+          'imageBase64': base64Image,
         },
       );
 
       if (response.statusCode == 200) {
         final content = response.data['choices'][0]['message']['content'];
-        debugPrint('OpenAI API応答: $content');
+        debugPrint('Worker proxy 応答: $content');
         return _parseImageAnalysisResponse(content);
       } else {
-        throw Exception('API request failed: ${response.statusCode}');
+        throw Exception('Worker request failed: ${response.statusCode}');
       }
     } catch (e) {
       // エラー時はダミーデータを返す
@@ -90,106 +66,8 @@ class AIService {
     }
   }
 
-  Future<Map<String, String>> generateObjectDescription(String objectCategory) async {
-    try {
-      if (!_hasValidApiKey) {
-        // APIキーが設定されていない場合はダミーデータを返す
-        debugPrint('APIキーが設定されていないため、ダミーデータを返します');
-        return _generateDummyDescription(objectCategory);
-      }
-
-      debugPrint('OpenAI APIで物体説明生成を開始: $objectCategory');
-
-      final response = await _dio.post(
-        'https://api.openai.com/v1/chat/completions',
-        options: Options(
-          headers: {
-            'Authorization': 'Bearer $_apiKey',
-            'Content-Type': 'application/json',
-          },
-        ),
-        data: {
-          'model': 'gpt-3.5-turbo',
-          'messages': [
-            {
-              'role': 'system',
-              'content': _getSystemPrompt(),
-            },
-            {
-              'role': 'user',
-              'content': '物体: $objectCategory',
-            }
-          ],
-          'max_tokens': 200,
-          'temperature': 0.8,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final content = response.data['choices'][0]['message']['content'];
-        debugPrint('OpenAI API応答: $content');
-        return _parseAIResponse(content);
-      } else {
-        throw Exception('API request failed: ${response.statusCode}');
-      }
-    } catch (e) {
-      // エラー時はダミーデータを返す
-      debugPrint('AI Service error: $e');
-      return _generateDummyDescription(objectCategory);
-    }
-  }
-
-  String _getImageAnalysisSystemPrompt() {
-    return '''
-あなたは異世界の古代遺物鑑定士です。現実世界の物体に隠された真の姿を見抜き、中二病的な設定を与える専門家です。
-
-以下の形式で必ず回答してください：
-
-物体カテゴリ: 画像の主な物体の名前（日本語、一般的な名称）
-異名: 《》で囲んだ格好いい真名（漢字・カタカナ・英語を組み合わせた神秘的な名前）
-属性: 炎/氷/雷/闇/光/風/地/水/無 のいずれか（物体の特性に合わせて選択）
-説明: 50-100文字の壮大で神秘的な設定説明（封印、古代、魔力、運命などの要素を含む）
-レア度: コモン/レア/エピック/レジェンダリー/ミシック のいずれか
-
-重要な指針：
-- 異名は物体の機能や見た目から連想される神秘的な名前にする
-- 説明は「封印されし」「古代の」「神々の」「禁断の」などの修飾語を使う
-- 日常的な物体ほど意外性のある壮大な設定を付ける
-- レア度は基本的にコモン(50%)、レア(30%)、エピック(15%)、レジェンダリー(4%)、ミシック(1%)の確率分布に従う
-
-例:
-物体カテゴリ: スマートフォン
-異名: 全知の水晶《オムニエンス・クリスタル》
-属性: 雷
-説明: 世界中の知識と魂を繋ぐ雷の神器。その画面に映る光は、異次元の情報を現世に伝える神秘の窓である。
-レア度: エピック
-''';
-  }
-
-  String _getSystemPrompt() {
-    return '''
-あなたは異界の神秘学者です。日常に潜む物体の真の姿を解き明かし、壮大な中二病設定を与えます。
-
-以下の形式で必ず回答してください：
-
-異名: 《》で囲んだ神秘的で格好いい真名（漢字・カタカナ・英語を組み合わせた厨二感あふれる名前）
-属性: 炎/氷/雷/闇/光/風/地/水/無 のいずれか（物体の性質に最も適した属性を選択）
-説明: 50-100文字の壮大で神秘的な背景設定（古代文明、封印、運命、魔力などの要素を含む）
-レア度: コモン/レア/エピック/レジェンダリー/ミシック のいずれか
-
-創作指針：
-- 異名は物体の機能や形状から連想される神話的・ファンタジー的な名前
-- 「封印されし」「古代の」「禁断の」「神々の」「永遠の」などの修飾語を効果的に使用
-- 平凡な物体ほど意外性のある壮大な設定を与える
-- レア度は基本的にコモン(50%)、レア(30%)、エピック(15%)、レジェンダリー(4%)、ミシック(1%)の確率分布に従う
-
-例:
-異名: 氷封の魔牢《フリージア・コア》
-属性: 氷
-説明: 古代文明が創造した永久保存の神器。内部に刻まれた時停止の魔法陣が、あらゆる食材を永劫に新鮮に保つ。
-レア度: レア
-''';
-  }
+  // System prompt は Worker (worker/src/index.ts) 側に移動済み。
+  // プロンプト改善時は Worker をデプロイしなおすだけでアプリ更新不要。
 
   Map<String, String> _parseImageAnalysisResponse(String content) {
     final lines = content.split('\n');
@@ -224,49 +102,6 @@ class AIService {
     if (originalRarity != result['rarity']) {
       debugPrint('画像解析レア度を確率ベースに変更: $originalRarity → ${result['rarity']}');
     }
-    
-    // 特殊イベントの効果を適用
-    return _applySpecialEventEffects(result);
-  }
-
-  Map<String, String> _parseAIResponse(String content) {
-    final lines = content.split('\n');
-    final result = <String, String>{};
-    
-    for (final line in lines) {
-      if (line.startsWith('異名:')) {
-        result['alternateName'] = line.replaceFirst('異名:', '').trim();
-      } else if (line.startsWith('属性:')) {
-        result['attribute'] = line.replaceFirst('属性:', '').trim();
-      } else if (line.startsWith('説明:')) {
-        result['description'] = line.replaceFirst('説明:', '').trim();
-      } else if (line.startsWith('レア度:')) {
-        final rawRarity = line.replaceFirst('レア度:', '').trim();
-        result['rarity'] = _normalizeRarity(rawRarity);
-      }
-    }
-    
-    // デフォルト値を設定
-    result['alternateName'] ??= '謎の神器《アンノウン》';
-    result['attribute'] ??= '無';
-    result['description'] ??= '未知なる力を秘めた謎めいた神器。その真の力はまだ解明されていない。';
-    result['rarity'] ??= 'コモン';
-    
-    // 特殊イベントの効果を適用
-    return _applySpecialEventEffects(result);
-  }
-
-  Map<String, String> _generateDummyDescription(String objectCategory) {
-    final random = Random();
-    final attributes = AppConstants.attributes;
-    
-    // 汎用ダミーデータのみ使用
-    final result = {
-      'alternateName': '未知の神器《${_generateRandomName()}》',
-      'attribute': attributes[random.nextInt(attributes.length)],
-      'description': '日常に潜む謎めいた神器。その真なる力は使い手によって開花する運命にある。',
-      'rarity': _selectRarityByProbability(),
-    };
     
     // 特殊イベントの効果を適用
     return _applySpecialEventEffects(result);

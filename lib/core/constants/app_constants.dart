@@ -5,11 +5,17 @@ class AppConstants {
   static const String appVersion = '1.0.0';
   
   // API設定
-  static const String openaiApiUrl = 'https://api.openai.com/v1/chat/completions';
   static const Duration apiTimeout = Duration(seconds: 30);
-  
-  // OpenAI APIキー（ビルド時に --dart-define=OPENAI_API_KEY=... で渡す）
-  static const String openaiApiKey = String.fromEnvironment('OPENAI_API_KEY', defaultValue: '');
+
+  // Cloudflare Worker proxy 設定
+  // OpenAI への転送はすべて Worker 経由で行う。アプリバイナリには
+  // 本物の OpenAI キーは焼き込まれない。
+  //   --dart-define=CHAOS_WORKER_URL=https://chaos-vision-proxy.<sub>.workers.dev
+  //   --dart-define=CHAOS_APP_SECRET=<wrangler secret put APP_SECRET の値>
+  static const String workerBaseUrl =
+      String.fromEnvironment('CHAOS_WORKER_URL', defaultValue: '');
+  static const String appSecret =
+      String.fromEnvironment('CHAOS_APP_SECRET', defaultValue: '');
   
   // 物体検出設定
   static const double detectionConfidence = 0.5;

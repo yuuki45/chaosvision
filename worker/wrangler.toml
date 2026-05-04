@@ -1,0 +1,17 @@
+name = "chaos-vision-proxy"
+main = "src/index.ts"
+compatibility_date = "2026-04-01"
+
+# 1ファイルに収まる軽量プロキシ。env vars はダッシュボードまたは
+# `wrangler secret put` から登録する。
+#   - OPENAI_API_KEY  : OpenAI 本物のキー
+#   - APP_SECRET      : iOS アプリと共有する Bearer トークン
+
+# 将来 KV を使ったレートリミットを入れる場合はここに binding を追加:
+#   [[kv_namespaces]]
+#   binding = "RATE_LIMIT"
+#   id = "..."
+
+# 観測：wrangler tail でログを見る
+[observability]
+enabled = true
