@@ -53,7 +53,7 @@ Future<void> setSoundEnabled(bool enabled);
 
 ## AIService
 
-OpenAI Vision API を叩いて中二異名を生成する。
+中二異名を生成する。直接 OpenAI を叩かず、**Cloudflare Worker proxy 経由**。
 
 **初期化:** 不要 (lazy)。コンストラクタで Dio クライアントを構築。
 
@@ -70,19 +70,27 @@ Future<Map<String, String>?> analyzeImageAndGenerate(String imagePath);
 // }
 ```
 
-**API キー:** `String.fromEnvironment('OPENAI_API_KEY', defaultValue: '')`。
-`--dart-define=OPENAI_API_KEY=...` で渡す。
+**通信先:** `${AppConstants.workerBaseUrl}/scan`
+- `workerBaseUrl` = `String.fromEnvironment('CHAOS_WORKER_URL')`
+- 認証ヘッダ: `Authorization: Bearer ${AppConstants.appSecret}`
+  - `appSecret` = `String.fromEnvironment('CHAOS_APP_SECRET')`
+- 両方 `--dart-define-from-file=secrets.json` で注入する (詳細は CLAUDE.md)
 
-**ダミー動作:** API キー未設定時は `_generateDummyFromImage` がランダムなダミーデータを返す。
-オフライン開発・初期動作確認に有用。
+**Worker 仕様:** `worker/README.md` 参照。アプリ側からは
+`{ "imageBase64": "..." }` を送るだけ。model / prompt / max_tokens / detail は
+Worker 側で固定されている。
 
-**画像処理:** `_resizeImageForAPI` で API 送信前に縮小 + JPEG 圧縮。
-メモリ節約のため最大寸法を制限。
+**ダミー動作:** `CHAOS_WORKER_URL` または `CHAOS_APP_SECRET` が未設定時は
+`_generateDummyFromImage` がランダムなダミーを返す。オフライン開発・初期動作
+確認に有用。
 
-**モデル:** `gpt-4o-mini` (コスト最適化のため安価モデル)。
+**画像処理:** `_resizeImageForAPI` で送信前に最大幅 512px に縮小 + JPEG 品質 85
+で圧縮。OpenAI の `detail: 'low'` が 512×512 に内部リサイズするので、これ以上
+大きく送っても帯域の無駄。
 
-**SpecialEventService と連携:** 特殊イベント発火中は `rarityMultiplier` で
-レア度を底上げするプロンプトを使う (詳細は ai_service.dart 参照)。
+**SpecialEventService と連携:** Worker から返る生成結果に対し、
+`_applySpecialEventEffects` でクライアント側で `rarityMultiplier` を適用。
+特殊イベントは時刻ベースなので server-side でなく client-side で判定する設計。
 
 ## CameraService
 
@@ -188,3 +196,23 @@ runApp(const ProviderScope(child: ChaosVisionApp()));
 
 `AIService` `CameraService` `SpecialEventService` `ShareService` は遅延 (lazy)、
 最初に使われる時点でセットアップされる。
+
+## サーバー側コンポーネント (`worker/`)
+
+`AIService` が叩く Cloudflare Worker proxy。Flutter プロジェクトと同じリポジトリ
+の `worker/` 直下に独立した Node プロジェクトとして存在する。
+
+**役割:**
+- OpenAI API キーの保管 (アプリバイナリから完全に分離)
+- 認証チェック (`Authorization: Bearer ${APP_SECRET}`)
+- リクエストの形式固定 (model / prompt / max_tokens / detail を server-side で固定)
+- OpenAI への転送 + レスポンス透過
+
+**運用フロー:**
+- プロンプト改善: `worker/src/index.ts` の `SYSTEM_PROMPT` を編集 →
+  `npm run deploy` (アプリ更新不要)
+- 鍵ローテーション: `npm run secret:openai` で再登録 → 即時反映
+- レート制限実装余地: `wrangler.toml` に KV namespace 追加 + `src/index.ts` で
+  IP 別カウンタ管理 (現状未実装)
+
+詳細は `worker/README.md`。

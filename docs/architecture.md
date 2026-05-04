@@ -1,7 +1,9 @@
 # Architecture
 
 CHAOS VISION は Flutter 製の単一画面遷移型 (Navigator スタック) アプリです。
-バックエンドは持たず、AI 推論のみ OpenAI Vision API に依存します。
+AI 推論は **自前の Cloudflare Worker proxy (`worker/`) を経由して** OpenAI Vision API
+を叩く構成。配布バイナリには OpenAI のキーは含まれず、Worker と共有する
+`CHAOS_APP_SECRET` (Bearer トークン) のみが入る。
 
 ## レイヤ構成
 
@@ -46,9 +48,19 @@ lib/
 [User]
   ↓ tap SCAN
 [ScannerScreenV2] — CameraService.takePicture()
-  ↓ image
-  ↓ AIService.analyzeImageAndGenerate(path)  ── HTTP ──▶ OpenAI gpt-4o-mini
-  ↓ AI 応答 (objectCategory / alternateName / attribute / description / rarity)
+  ↓ image (resized to 512px max, JPEG q=85)
+  ↓ AIService.analyzeImageAndGenerate(path)
+  ↓   POST /scan  Authorization: Bearer <APP_SECRET>
+  ↓                body: { imageBase64 }
+[Cloudflare Worker (worker/)]
+  ↓   ・APP_SECRET 検証
+  ↓   ・SYSTEM_PROMPT / model="gpt-4o-mini" / max_tokens=300 / detail="low" を server-side で固定
+  ↓   ・OPENAI_API_KEY を Bearer に入れて転送
+  ↓   ── HTTPS ──▶ OpenAI gpt-4o-mini
+  ↓ ◀── OpenAI Chat Completion JSON
+  ↓
+[ScannerScreenV2] AI 応答 (objectCategory / alternateName / attribute / description / rarity)
+  ↓
 [StorageService.saveScannedObject(obj)]  ── Hive box write ──▶ disk
   ↓
 [Navigator.push(_revealRoute → ScanResultScreenV2)]
@@ -115,4 +127,17 @@ lib/
 
 - `ios/build/`、`ios/Pods/`、`android/build/` 等は `.gitignore` 済 (途中で混入していたものも整理済)
 - `macOS` ビルドは Xcode 検証用に有効化されている (`flutter build macos --debug` で動く)
-- 配布対象は iOS のみを想定 (`flutter build ipa --dart-define=OPENAI_API_KEY=...`)
+- 配布対象は iOS のみを想定: `flutter build ipa --dart-define-from-file=secrets.json`
+
+## Worker proxy (worker/)
+
+詳細は `worker/README.md` 参照。要点:
+
+- **TypeScript / Cloudflare Workers Free Tier** で運用 (100k req/day で十分)
+- 公開エンドポイント: `https://chaos-vision-proxy.clow-ff14.workers.dev`
+  - `GET /` — ヘルスチェック
+  - `POST /scan` — Bearer 認証 + 画像 → OpenAI 転送 → 応答そのまま返却
+- `OPENAI_API_KEY` / `APP_SECRET` は Cloudflare の secret store に保管
+  (`wrangler secret put`)
+- Worker は **model / system prompt / max_tokens / detail を固定**しているので、
+  仮に `APP_SECRET` が漏洩しても任意プロンプトで OpenAI を叩くことは不可能
