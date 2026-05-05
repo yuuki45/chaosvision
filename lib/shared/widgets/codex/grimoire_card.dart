@@ -171,13 +171,14 @@ class GrimoireCard extends StatelessWidget {
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       _displayName,
-                      maxLines: 2,
+                      maxLines: 1,
+                      softWrap: false,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.shipporiMincho(
                         fontSize: 13,
@@ -192,7 +193,7 @@ class GrimoireCard extends StatelessWidget {
                       height: 0.6,
                       color: AppColors.goldTarnish.withValues(alpha: 0.4),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Row(
                       children: [
                         Text(

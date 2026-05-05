@@ -394,7 +394,7 @@ class _TabCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = active ? AppColors.bloodBright : AppColors.goldTarnish;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 9),
       decoration: BoxDecoration(
         color: active
             ? AppColors.blood.withValues(alpha: 0.14)
@@ -418,38 +418,41 @@ class _TabCell extends StatelessWidget {
           ),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
               jp,
               style: GoogleFonts.shipporiMincho(
-                fontSize: 13,
+                fontSize: 12,
                 color: active
                     ? AppColors.bone
                     : AppColors.boneDim.withValues(alpha: 0.85),
-                letterSpacing: 6,
+                letterSpacing: 5,
                 fontWeight: FontWeight.w700,
               ),
             ),
-          ),
-          const SizedBox(height: 3),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
+            const SizedBox(width: 8),
+            Container(
+              width: 8,
+              height: 1,
+              color: accent.withValues(alpha: active ? 0.9 : 0.5),
+            ),
+            const SizedBox(width: 8),
+            Text(
               en,
               style: GoogleFonts.jetBrainsMono(
-                fontSize: 8.5,
+                fontSize: 8,
                 color: active
                     ? AppColors.bloodBright
                     : AppColors.goldTarnish.withValues(alpha: 0.7),
-                letterSpacing: 3,
+                letterSpacing: 2.5,
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1026,7 +1029,7 @@ class _Grid extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.66,
+        childAspectRatio: 0.78,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
       ),
