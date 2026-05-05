@@ -253,6 +253,7 @@ class _ObjectDetailScreenV2State extends State<ObjectDetailScreenV2> {
                         accent: _attribute,
                         rarityLabel: _rarityShort,
                         rarityColor: _rarityColor,
+                        archivePosition: _archiveStats.position,
                       )
                           .animate()
                           .fadeIn(duration: 600.ms, delay: 150.ms)

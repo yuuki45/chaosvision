@@ -10,6 +10,7 @@ class CodexImageFrame extends StatelessWidget {
   final String? rarityLabel;
   final Color? rarityColor;
   final double aspectRatio;
+  final int? archivePosition;
 
   const CodexImageFrame({
     super.key,
@@ -18,6 +19,7 @@ class CodexImageFrame extends StatelessWidget {
     this.rarityLabel,
     this.rarityColor,
     this.aspectRatio = 1.0,
+    this.archivePosition,
   });
 
   @override
@@ -138,9 +140,11 @@ class CodexImageFrame extends StatelessWidget {
               padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               color: AppColors.inkDeeper.withValues(alpha: 0.7),
-              child: const Text(
-                'PROOF.JPG',
-                style: TextStyle(
+              child: Text(
+                archivePosition != null
+                    ? 'ARTIFACT_${archivePosition!.toString().padLeft(3, '0')}.JPG'
+                    : 'ARTIFACT.JPG',
+                style: const TextStyle(
                   fontFamily: 'Courier',
                   color: AppColors.boneDim,
                   fontSize: 9,

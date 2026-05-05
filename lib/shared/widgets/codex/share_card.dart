@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/services/storage_service.dart';
 import '../../models/scanned_object.dart';
 import '../magic_circle_widget.dart';
 import 'wax_stamp.dart';
@@ -23,6 +24,14 @@ class ShareCard extends StatelessWidget {
 
   Color get _attribute =>
       AppColors.attributeColors[object.attribute] ?? AppColors.goldLeaf;
+
+  /// 図鑑内の chronological 位置 (1-indexed)。求まらなければ null。
+  int? get _archivePosition {
+    final all = StorageService.instance.getAllScannedObjects()
+      ..sort((a, b) => a.scannedAt.compareTo(b.scannedAt));
+    final idx = all.indexWhere((o) => o.id == object.id);
+    return idx >= 0 ? idx + 1 : null;
+  }
 
   Color get _rarityColor {
     final n = _normalizeRarity(object.rarity);
@@ -337,7 +346,9 @@ class ShareCard extends StatelessWidget {
                   const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
               color: AppColors.inkDeeper.withValues(alpha: 0.7),
               child: Text(
-                'PROOF.JPG',
+                _archivePosition != null
+                    ? 'ARTIFACT_${_archivePosition!.toString().padLeft(3, '0')}.JPG'
+                    : 'ARTIFACT.JPG',
                 style: GoogleFonts.jetBrainsMono(
                   fontSize: 7,
                   color: AppColors.boneDim,
