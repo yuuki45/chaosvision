@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
@@ -94,7 +95,42 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
       }
       final fileName = 'scanned_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final dest = path.join(imagesDir.path, fileName);
-      await File(sourcePath).copy(dest);
+
+      // ビューファインダーは画面中央よりやや上にあるため、
+      // カメラの full FOV を中央クロップすると被写体が上にズレて見える。
+      // 撮影画像を正方形でクロップ + 上方向に少しバイアスして保存し、
+      // 保存・表示・共有がビューファインダーで見た構図と一致するようにする。
+      final originalBytes = await File(sourcePath).readAsBytes();
+      final original = img.decodeImage(originalBytes);
+      if (original == null) {
+        await File(sourcePath).copy(dest);
+        return dest;
+      }
+
+      final w = original.width;
+      final h = original.height;
+      final size = w < h ? w : h;
+      final offsetX = ((w - size) / 2).round();
+      // 画像が縦長なら、上方向に約 22% バイアスして上半分を多めに残す。
+      // 横長 (rare) なら水平方向のバイアスは無し (中央で OK)。
+      int offsetY;
+      if (h > w) {
+        final verticalMargin = h - size;
+        const upwardBias = 0.22; // 0.0 = 中央, 0.5 = 完全に上寄り
+        offsetY = (verticalMargin * (0.5 - upwardBias)).round();
+      } else {
+        offsetY = ((h - size) / 2).round();
+      }
+
+      final cropped = img.copyCrop(
+        original,
+        x: offsetX.clamp(0, w - size),
+        y: offsetY.clamp(0, h - size),
+        width: size,
+        height: size,
+      );
+      final croppedBytes = img.encodeJpg(cropped, quality: 92);
+      await File(dest).writeAsBytes(croppedBytes);
       return dest;
     } catch (_) {
       return null;
