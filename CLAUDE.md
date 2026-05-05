@@ -48,21 +48,19 @@ lib/
 ```bash
 flutter pub get
 
-# 開発実行: AI を使うには Cloudflare Worker proxy 経由 (worker/ 配下)。
-# secrets.json (gitignored) に CHAOS_WORKER_URL と CHAOS_APP_SECRET を入れる。
-# テンプレ: secrets.json.example
+# Makefile が --dart-define-from-file 含む典型コマンドをラップしている。
+# 一覧は `make help`。代表的なもの:
+make run                      # iPhone (or DEVICE=...) に転送 + dart-define
+make build-ipa                # 配布用 IPA
+make build-ios-debug          # Xcode で ▶ する前に Generated.xcconfig 更新
+make analyze                  # dart analyze lib/  (flutter analyze は環境依存でクラッシュ)
+make test                     # flutter test
+make worker-deploy            # Cloudflare Worker 再デプロイ
+make worker-tail              # Worker のリアルタイムログ
+
+# 直叩きする場合:
 flutter run -d <device> --dart-define-from-file=secrets.json
-
-dart analyze                                       # ← `flutter analyze` は環境依存でクラッシュするので dart 直叩き
-flutter test
-flutter format .
-
-# Hive/JSON コード生成
-flutter pub run build_runner build --delete-conflicting-outputs
-
-# ビルド
 flutter build ipa --dart-define-from-file=secrets.json
-flutter build apk --dart-define-from-file=secrets.json
 ```
 
 AI 接続のキーはアプリに直に持たせず、`worker/` (Cloudflare Worker proxy) が
