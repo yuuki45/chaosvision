@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/constants/app_colors.dart';
 import 'core/constants/app_constants.dart';
+import 'core/services/achievement_service.dart';
 import 'core/services/image_cache_service.dart';
 import 'core/services/memory_monitor_service.dart';
 import 'core/services/storage_service.dart';
@@ -16,6 +17,9 @@ void main() async {
 
   // ストレージサービスを初期化
   await StorageService.instance.initialize();
+
+  // アチーブメントサービスを初期化（StorageService の Hive.initFlutter 後に呼ぶ）
+  await AchievementService.instance.initialize();
 
   // 画像キャッシュサービスを初期化
   ImageCacheService.instance.initialize();

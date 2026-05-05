@@ -14,10 +14,13 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../core/constants/app_colors.dart';
+import '../../core/services/achievement_service.dart';
 import '../../core/services/ai_service.dart';
 import '../../core/services/camera_service.dart';
 import '../../core/services/storage_service.dart';
 
+import '../achievements/achievement_catalog.dart';
+import '../achievements/achievement_modal.dart';
 import '../../shared/models/scanned_object.dart';
 import '../../shared/widgets/codex/grain_overlay.dart';
 import '../../shared/widgets/codex/hud_meta_bar.dart';
@@ -195,6 +198,20 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       await Navigator.of(context).push(_revealRoute(obj));
+
+      // 結果画面から戻ってきたタイミングでアチーブメントを評価。
+      // 評価には保存済みのスキャン履歴全体を使う（今回スキャン分も含む）。
+      if (!mounted) return;
+      final all = _storageService.getAllScannedObjects();
+      final newly = await AchievementService.instance.evaluateAndUnlock(
+        AchievementCheckContext(all),
+        scannedObjectId: obj.id,
+      );
+      if (!mounted) return;
+      for (final a in newly) {
+        if (!mounted) break;
+        await showAchievementUnlockModal(context, a);
+      }
     } catch (e) {
       _toast('スキャンエラー: $e');
     } finally {

@@ -13,6 +13,7 @@ import '../../shared/widgets/codex/grimoire_card.dart';
 import '../../shared/widgets/codex/kanji_backdrop.dart';
 import '../../shared/widgets/codex/scanline_overlay.dart';
 
+import '../achievements/seals_tab.dart';
 import 'object_detail_screen_v2.dart';
 
 class CollectionScreenV2 extends ConsumerStatefulWidget {
@@ -40,6 +41,9 @@ class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
   bool _hasMore = true;
   bool _isLoading = false;
   bool _isLoadingMore = false;
+
+  // 0 = 神 器 / 1 = 印 璽
+  int _currentTab = 0;
 
   @override
   void initState() {
@@ -247,12 +251,22 @@ class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
                   count: _totalCount,
                   shown: _objects.length,
                   onBack: () => Navigator.of(context).pop(),
-                  onDeleteAll: _totalCount > 0 ? _showDeleteAllDialog : null,
+                  onDeleteAll: (_currentTab == 0 && _totalCount > 0)
+                      ? _showDeleteAllDialog
+                      : null,
                 )
                     .animate()
                     .fadeIn(duration: 400.ms)
                     .slideY(begin: -0.2, end: 0, duration: 500.ms),
+                const SizedBox(height: 6),
+                _TabSwitcher(
+                  current: _currentTab,
+                  onSelect: (i) => setState(() => _currentTab = i),
+                ).animate().fadeIn(duration: 400.ms, delay: 100.ms),
                 const SizedBox(height: 10),
+                if (_currentTab == 1)
+                  const Expanded(child: SealsTab())
+                else ...[
                 _StatusPanel(
                   rarityStats: _rarityStats,
                   total: _grandTotal,
@@ -320,12 +334,120 @@ class _CollectionScreenV2State extends ConsumerState<CollectionScreenV2>
                               },
                             ),
                 ),
+                ],
                 const _Footer(),
               ],
             ),
           ),
           const Positioned.fill(
             child: GrainOverlay(opacity: 0.06, density: 1800),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TabSwitcher extends StatelessWidget {
+  final int current;
+  final ValueChanged<int> onSelect;
+  const _TabSwitcher({required this.current, required this.onSelect});
+
+  static const _tabs = <(String, String)>[
+    ('神  器', 'ARTIFACTS'),
+    ('印  璽', 'SEALS'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+      child: Row(
+        children: [
+          for (int i = 0; i < _tabs.length; i++) ...[
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onSelect(i),
+                child: _TabCell(
+                  jp: _tabs[i].$1,
+                  en: _tabs[i].$2,
+                  active: current == i,
+                ),
+              ),
+            ),
+            if (i == 0) const SizedBox(width: 10),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _TabCell extends StatelessWidget {
+  final String jp;
+  final String en;
+  final bool active;
+  const _TabCell({required this.jp, required this.en, required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = active ? AppColors.bloodBright : AppColors.goldTarnish;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: active
+            ? AppColors.blood.withValues(alpha: 0.14)
+            : AppColors.inkBlack.withValues(alpha: 0.5),
+        border: Border(
+          top: BorderSide(
+            color: accent.withValues(alpha: active ? 1 : 0.4),
+            width: active ? 1.2 : 0.8,
+          ),
+          bottom: BorderSide(
+            color: accent.withValues(alpha: active ? 1 : 0.4),
+            width: active ? 1.2 : 0.8,
+          ),
+          left: BorderSide(
+            color: accent.withValues(alpha: 0.5),
+            width: 0.6,
+          ),
+          right: BorderSide(
+            color: accent.withValues(alpha: 0.5),
+            width: 0.6,
+          ),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              jp,
+              style: GoogleFonts.shipporiMincho(
+                fontSize: 13,
+                color: active
+                    ? AppColors.bone
+                    : AppColors.boneDim.withValues(alpha: 0.85),
+                letterSpacing: 6,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(height: 3),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              en,
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 8.5,
+                color: active
+                    ? AppColors.bloodBright
+                    : AppColors.goldTarnish.withValues(alpha: 0.7),
+                letterSpacing: 3,
+              ),
+            ),
           ),
         ],
       ),
