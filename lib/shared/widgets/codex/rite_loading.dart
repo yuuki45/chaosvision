@@ -8,6 +8,7 @@ import 'magic_aura_circle.dart';
 class RiteLoading extends StatefulWidget {
   final bool retryAvailable;
   final VoidCallback? onRetry;
+  final VoidCallback? onOpenSettings;
   final String headline;
   final String englishHeadline;
 
@@ -15,6 +16,7 @@ class RiteLoading extends StatefulWidget {
     super.key,
     this.retryAvailable = false,
     this.onRetry,
+    this.onOpenSettings,
     this.headline = '異 界 へ 接 続 中',
     this.englishHeadline = 'CONNECTING TO THE OTHER REALM',
   });
@@ -108,46 +110,34 @@ class _RiteLoadingState extends State<RiteLoading> {
               ),
               if (widget.retryAvailable) ...[
                 const SizedBox(height: 28),
-                GestureDetector(
+                _CodexButton(
                   onTap: widget.onRetry,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 22, vertical: 12),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: AppColors.bloodBright,
-                        width: 1,
-                      ),
-                      color: AppColors.blood.withValues(alpha: 0.22),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '再 び 視 を 開 く',
-                          style: GoogleFonts.shipporiMincho(
-                            fontSize: 13,
-                            color: AppColors.bone,
-                            letterSpacing: 4,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Container(
-                          width: 14,
-                          height: 1,
-                          color: AppColors.bloodBright,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'RETRY',
-                          style: GoogleFonts.jetBrainsMono(
-                            fontSize: 10,
-                            color: AppColors.bloodBright,
-                            letterSpacing: 3,
-                          ),
-                        ),
-                      ],
+                  jp: '再 び 視 を 開 く',
+                  en: 'RETRY',
+                  accent: AppColors.bloodBright,
+                  fill: AppColors.blood.withValues(alpha: 0.22),
+                ),
+              ],
+              if (widget.onOpenSettings != null) ...[
+                const SizedBox(height: 14),
+                _CodexButton(
+                  onTap: widget.onOpenSettings,
+                  jp: '設 定 を 開 く',
+                  en: 'OPEN SETTINGS',
+                  accent: AppColors.goldLeaf,
+                  fill: AppColors.goldTarnish.withValues(alpha: 0.12),
+                ),
+                const SizedBox(height: 14),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    '設 定 ＞ プ ラ イ バ シ ー ＞ カ メ ラ',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.shipporiMincho(
+                      fontSize: 11,
+                      color: AppColors.boneDim,
+                      letterSpacing: 3,
+                      height: 1.6,
                     ),
                   ),
                 ),
@@ -155,6 +145,61 @@ class _RiteLoadingState extends State<RiteLoading> {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CodexButton extends StatelessWidget {
+  final VoidCallback? onTap;
+  final String jp;
+  final String en;
+  final Color accent;
+  final Color fill;
+
+  const _CodexButton({
+    required this.onTap,
+    required this.jp,
+    required this.en,
+    required this.accent,
+    required this.fill,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border.all(color: accent, width: 1),
+          color: fill,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              jp,
+              style: GoogleFonts.shipporiMincho(
+                fontSize: 13,
+                color: AppColors.bone,
+                letterSpacing: 4,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Container(width: 14, height: 1, color: accent),
+            const SizedBox(width: 10),
+            Text(
+              en,
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 10,
+                color: accent,
+                letterSpacing: 3,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -20,6 +20,7 @@ help:
 	@echo "  Flutter (アプリ側):"
 	@echo "    make run               iPhone (or DEVICE=...) で起動 + dart-define"
 	@echo "    make run-mac           macOS デスクトップで起動 + dart-define"
+	@echo "    make run-onboarding    オンボーディング強制表示モードで起動 (反復テスト用)"
 	@echo "    make build-ipa         配布用 IPA をビルド"
 	@echo "    make build-ios-debug   Xcode 用に Debug iOS をビルド (Generated.xcconfig 更新)"
 	@echo "    make analyze           dart analyze lib/"
@@ -65,6 +66,15 @@ run: check-secrets
 .PHONY: run-mac
 run-mac: check-secrets
 	flutter run -d macos $(DART_DEFINES)
+
+# 実機でオンボーディングを毎回確認したいとき用。
+# FORCE_ONBOARDING=true を渡すと:
+#   - 起動時、保存済み first_launch フラグを無視して常にオンボを表示
+#   - オンボ完了時にも first_launch=false を書き込まないので、
+#     アプリを終了して再起動してもまたオンボから始まる。
+.PHONY: run-onboarding
+run-onboarding: check-secrets
+	flutter run -d $(DEVICE) $(DART_DEFINES) --dart-define=FORCE_ONBOARDING=true
 
 .PHONY: build-ipa
 build-ipa: check-secrets

@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../core/services/ai_service.dart';
@@ -71,6 +72,15 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
   Future<void> _initializeCamera() async {
     if (mounted) setState(() => _permissionDenied = false);
     try {
+      // permanentlyDenied / restricted のときだけ早期に拒否画面へ。
+      // iOS の `denied` は notDetermined (未確認) も含むため、
+      // ここで弾くと初回ダイアログ自体が出なくなる。未確認は素直に
+      // _cameraService.initialize() に進めて OS にダイアログを出させる。
+      final status = await Permission.camera.status;
+      if (status.isPermanentlyDenied || status.isRestricted) {
+        if (mounted) setState(() => _permissionDenied = true);
+        return;
+      }
       final ok = await _cameraService.initialize();
       if (!mounted) return;
       if (ok) {
@@ -247,6 +257,7 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
               englishHeadline: 'THE EYE IS SEALED',
               retryAvailable: true,
               onRetry: _initializeCamera,
+              onOpenSettings: () => openAppSettings(),
             )
           else if (_isInitialized && _cameraService.controller != null) ...[
             _CameraSurface(controller: _cameraService.controller!),
