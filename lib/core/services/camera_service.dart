@@ -117,6 +117,29 @@ class CameraService {
     _isInitialized = false;
   }
 
+  /// 端末がサポートするズーム範囲を返す。失敗したら (1.0, 1.0)。
+  Future<(double min, double max)> getZoomBounds() async {
+    if (_controller == null) return (1.0, 1.0);
+    try {
+      final min = await _controller!.getMinZoomLevel();
+      final max = await _controller!.getMaxZoomLevel();
+      return (min, max);
+    } catch (e) {
+      debugPrint('getZoomBounds error: $e');
+      return (1.0, 1.0);
+    }
+  }
+
+  /// ズーム倍率を設定する。範囲外は無視。
+  Future<void> setZoom(double level) async {
+    if (_controller == null) return;
+    try {
+      await _controller!.setZoomLevel(level);
+    } catch (e) {
+      debugPrint('setZoom error: $e');
+    }
+  }
+
   Future<void> startImageStream(Function(CameraImage) onLatestImageAvailable) async {
     if (!_isInitialized || _controller == null) {
       debugPrint('Camera not initialized for image stream');

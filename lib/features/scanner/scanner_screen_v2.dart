@@ -47,6 +47,14 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
   bool _isScanning = false;
   bool _permissionDenied = false;
 
+  // ズーム状態
+  double _minZoom = 1.0;
+  double _maxZoom = 1.0;
+  double _currentZoom = 1.0;
+  double _baseZoom = 1.0; // ピンチ開始時の倍率
+  bool _showZoomIndicator = false;
+  Timer? _zoomIndicatorTimer;
+
   @override
   void initState() {
     super.initState();
@@ -57,6 +65,7 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _zoomIndicatorTimer?.cancel();
     _cameraService.dispose();
     super.dispose();
   }
@@ -88,6 +97,14 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
       if (!mounted) return;
       if (ok) {
         setState(() => _isInitialized = true);
+        // ズーム範囲を取得 (端末によっては未対応で 1.0/1.0 が返る)
+        final (minZ, maxZ) = await _cameraService.getZoomBounds();
+        if (!mounted) return;
+        setState(() {
+          _minZoom = minZ;
+          _maxZoom = maxZ;
+          _currentZoom = minZ.clamp(1.0, maxZ);
+        });
       } else {
         setState(() => _permissionDenied = true);
       }
@@ -251,6 +268,24 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
     );
   }
 
+  void _onScaleStart(ScaleStartDetails _) {
+    _baseZoom = _currentZoom;
+  }
+
+  Future<void> _onScaleUpdate(ScaleUpdateDetails details) async {
+    if (_maxZoom <= _minZoom) return; // 端末がズーム未対応
+    final next = (_baseZoom * details.scale).clamp(_minZoom, _maxZoom);
+    if ((next - _currentZoom).abs() < 0.01) return;
+    _currentZoom = next;
+    await _cameraService.setZoom(next);
+    if (!mounted) return;
+    setState(() => _showZoomIndicator = true);
+    _zoomIndicatorTimer?.cancel();
+    _zoomIndicatorTimer = Timer(const Duration(milliseconds: 1100), () {
+      if (mounted) setState(() => _showZoomIndicator = false);
+    });
+  }
+
   void _toast(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -278,6 +313,15 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
             )
           else if (_isInitialized && _cameraService.controller != null) ...[
             _CameraSurface(controller: _cameraService.controller!),
+            // ピンチでズーム。シャッターや HUD はこの上のレイヤーに乗る
+            // ので translucent で当たり判定だけ拾い、タップは下に流す。
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onScaleStart: _onScaleStart,
+                onScaleUpdate: _onScaleUpdate,
+              ),
+            ),
             const Positioned.fill(child: _Vignette()),
             const Positioned.fill(
               child: GrainOverlay(opacity: 0.05, density: 1400),
@@ -294,39 +338,41 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
                       .fadeIn(duration: 500.ms)
                       .slideY(begin: -0.2, end: 0, duration: 500.ms),
                   Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 12),
-                      child: Center(
-                        child: LayoutBuilder(
-                          builder: (context, c) {
-                            final byW = c.maxWidth - 48;
-                            final byH = c.maxHeight - 48;
-                            final s = byW < byH ? byW : byH;
-                            final size = s.clamp(200.0, 360.0);
-                            return Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                RuneFrame(
-                                  size: size,
-                                  scanning: _isScanning,
-                                )
-                                    .animate()
-                                    .fadeIn(duration: 600.ms)
-                                    .scale(
-                                      begin: const Offset(0.9, 0.9),
-                                      end: const Offset(1, 1),
-                                      duration: 700.ms,
-                                      curve: Curves.easeOutCubic,
-                                    ),
-                                SizedBox(
-                                  width: size,
-                                  height: size,
-                                  child: _ScanRitual(active: _isScanning),
-                                ),
-                              ],
-                            );
-                          },
+                    child: IgnorePointer(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 12),
+                        child: Center(
+                          child: LayoutBuilder(
+                            builder: (context, c) {
+                              final byW = c.maxWidth - 48;
+                              final byH = c.maxHeight - 48;
+                              final s = byW < byH ? byW : byH;
+                              final size = s.clamp(200.0, 360.0);
+                              return Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  RuneFrame(
+                                    size: size,
+                                    scanning: _isScanning,
+                                  )
+                                      .animate()
+                                      .fadeIn(duration: 600.ms)
+                                      .scale(
+                                        begin: const Offset(0.9, 0.9),
+                                        end: const Offset(1, 1),
+                                        duration: 700.ms,
+                                        curve: Curves.easeOutCubic,
+                                      ),
+                                  SizedBox(
+                                    width: size,
+                                    height: size,
+                                    child: _ScanRitual(active: _isScanning),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -351,6 +397,71 @@ class _ScannerScreenV2State extends ConsumerState<ScannerScreenV2>
             Positioned.fill(
               child: IgnorePointer(child: _ScanFlash(trigger: _isScanning)),
             ),
+          // ズームインジケータ — ピンチ中だけフェード表示。
+          if (_isInitialized && _maxZoom > _minZoom)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: IgnorePointer(
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 56),
+                    child: Center(
+                      child: AnimatedOpacity(
+                        opacity: _showZoomIndicator ? 1 : 0,
+                        duration: const Duration(milliseconds: 180),
+                        child: _ZoomBadge(zoom: _currentZoom),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ZoomBadge extends StatelessWidget {
+  final double zoom;
+  const _ZoomBadge({required this.zoom});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.inkBlack.withValues(alpha: 0.72),
+        border: Border.all(
+          color: AppColors.goldTarnish.withValues(alpha: 0.7),
+          width: 0.7,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            zoom.toStringAsFixed(1),
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: 14,
+              color: AppColors.bone,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '×',
+            style: GoogleFonts.bodoniModa(
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+              color: AppColors.goldLeaf,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
