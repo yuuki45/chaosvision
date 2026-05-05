@@ -177,7 +177,8 @@ class _ScanResultScreenV2State extends ConsumerState<ScanResultScreenV2> {
                       const SizedBox(height: 26),
                       _Readings(
                         timestamp: timeStr,
-                        confidence: obj.confidence,
+                        aether: obj.aetherDensity,
+                        resonance: obj.resonance,
                         accent: _attribute,
                       )
                           .animate()
@@ -710,17 +711,20 @@ class _LoreBlock extends StatelessWidget {
 
 class _Readings extends StatelessWidget {
   final String timestamp;
-  final double confidence;
+  final double aether;
+  final double resonance;
   final Color accent;
   const _Readings({
     required this.timestamp,
-    required this.confidence,
+    required this.aether,
+    required this.resonance,
     required this.accent,
   });
 
   @override
   Widget build(BuildContext context) {
-    final pct = (confidence * 100).clamp(0, 100).toInt();
+    final aetherPct = (aether * 100).clamp(0, 100).toInt();
+    final resonancePct = (resonance * 100).clamp(0, 100).toInt();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -756,7 +760,9 @@ class _Readings extends StatelessWidget {
         const SizedBox(height: 12),
         _row('TIMESTAMP', timestamp, valueColor: AppColors.bone),
         const SizedBox(height: 8),
-        _confidenceRow(pct),
+        _gaugeRow('AETHER', aetherPct, accent),
+        const SizedBox(height: 8),
+        _gaugeRow('RESONANCE', resonancePct, AppColors.goldLeaf),
         const SizedBox(height: 8),
         _row(
           'ARCHIVED',
@@ -796,13 +802,13 @@ class _Readings extends StatelessWidget {
     );
   }
 
-  Widget _confidenceRow(int pct) {
+  Widget _gaugeRow(String label, int pct, Color barColor) {
     return Row(
       children: [
         SizedBox(
           width: 96,
           child: Text(
-            'CONFIDENCE',
+            label,
             style: GoogleFonts.jetBrainsMono(
               fontSize: 9,
               color: AppColors.boneDim,
@@ -835,13 +841,13 @@ class _Readings extends StatelessWidget {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            accent.withValues(alpha: 0.4),
-                            accent,
+                            barColor.withValues(alpha: 0.4),
+                            barColor,
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: accent.withValues(alpha: 0.55),
+                            color: barColor.withValues(alpha: 0.55),
                             blurRadius: 8,
                           ),
                         ],

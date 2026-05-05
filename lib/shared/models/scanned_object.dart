@@ -119,4 +119,60 @@ class ScannedObject {
     final path = await getFullImagePath();
     return path != null;
   }
+
+  /// 霊力濃度 (AETHER DENSITY) — 0.0..1.0
+  ///
+  /// 旧 confidence フィールドの代わりに、神器固有の "霊的測定値" を
+  /// 演出用に算出する。同じ神器なら何度開いても同じ値が出るよう、
+  /// id のハッシュとレア度ランクから決定論的に導出している。
+  double get aetherDensity {
+    final hash = id.hashCode.abs();
+    final base = 55 + (hash % 26); // 55..80
+    final rarityBoost = _rarityRank() * 5; // 0..25
+    final value = (base + rarityBoost).clamp(0, 99);
+    return value / 100.0;
+  }
+
+  /// 共鳴強度 (RESONANCE) — 0.0..1.0
+  ///
+  /// 神器が属性と共鳴する強さの演出値。aether とは別の hash 基底を
+  /// 使って独立した値を出す。属性が「無」のときはやや低め。
+  double get resonance {
+    final hash = ((id.hashCode.abs()) >> 7) ^ attribute.hashCode;
+    final base = 40 + (hash.abs() % 41); // 40..80
+    final voidPenalty = attribute == '無' ? -10 : 0;
+    final value = (base + voidPenalty).clamp(20, 95);
+    return value / 100.0;
+  }
+
+  int _rarityRank() {
+    final normalized = _normalizeRarityForRank(rarity);
+    switch (normalized) {
+      case 'ミシック':
+        return 5;
+      case 'レジェンダリー':
+        return 4;
+      case 'エピック':
+        return 3;
+      case 'レア':
+        return 2;
+      case 'コモン':
+        return 1;
+      default:
+        return 0;
+    }
+  }
+
+  String _normalizeRarityForRank(String r) {
+    const map = {
+      'Common': 'コモン', 'common': 'コモン', 'COMMON': 'コモン',
+      'Rare': 'レア', 'rare': 'レア', 'RARE': 'レア',
+      'Epic': 'エピック', 'epic': 'エピック', 'EPIC': 'エピック',
+      'Legendary': 'レジェンダリー', 'legendary': 'レジェンダリー',
+      'LEGENDARY': 'レジェンダリー',
+      'Mythic': 'ミシック', 'mythic': 'ミシック', 'MYTHIC': 'ミシック',
+      'Mythical': 'ミシック', 'mythical': 'ミシック',
+    };
+    return map[r] ?? r;
+  }
 }
