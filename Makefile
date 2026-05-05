@@ -67,11 +67,14 @@ run: check-secrets
 run-mac: check-secrets
 	flutter run -d macos $(DART_DEFINES)
 
-# 実機でオンボーディングを毎回確認したいとき用。
+# 実機でオンボーディングを毎回確認したいとき用 (デバッグビルド専用)。
 # FORCE_ONBOARDING=true を渡すと:
 #   - 起動時、保存済み first_launch フラグを無視して常にオンボを表示
 #   - オンボ完了時にも first_launch=false を書き込まないので、
 #     アプリを終了して再起動してもまたオンボから始まる。
+# ⚠️ main.dart 側で kDebugMode 必須にしているため、リリースビルド
+# (--release / build-ipa) では たとえ FORCE_ONBOARDING=true が渡っても
+# 無視される。本番に漏れる事故防止のフェイルセーフ。
 .PHONY: run-onboarding
 run-onboarding: check-secrets
 	flutter run -d $(DEVICE) $(DART_DEFINES) --dart-define=FORCE_ONBOARDING=true

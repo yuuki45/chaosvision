@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -36,8 +37,15 @@ void main() async {
   // ちらつきを避ける。
   // FORCE_ONBOARDING=true の dart-define が指定されていれば、保存済みフラグを
   // 無視して常にオンボーディングを表示する（実機反復テスト用）。
-  const forceOnboarding =
+  // ⚠️ kDebugMode で必ずゲート: リリースビルド (--release / IPA) では
+  // たとえ --dart-define=FORCE_ONBOARDING=true が渡っても無視する。
+  // 本番にデバッグモードが漏れる事故を防ぐためのフェイルセーフ。
+  const envForceOnboarding =
       bool.fromEnvironment('FORCE_ONBOARDING', defaultValue: false);
+  final forceOnboarding = kDebugMode && envForceOnboarding;
+  if (forceOnboarding) {
+    debugPrint('⚠️ FORCE_ONBOARDING=true (debug only). オンボを強制表示します。');
+  }
   bool isFirstLaunch;
   if (forceOnboarding) {
     isFirstLaunch = true;
