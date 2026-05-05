@@ -568,7 +568,7 @@ class _TrueNameBlock extends StatelessWidget {
           '※  元 の 姿  ─  $original',
           style: GoogleFonts.shipporiMincho(
             fontSize: 11,
-            color: AppColors.boneDim,
+            color: AppColors.bone.withValues(alpha: 0.72),
             letterSpacing: 2,
             fontStyle: FontStyle.italic,
           ),
@@ -1243,7 +1243,7 @@ class _DeleteDialog extends StatelessWidget {
                           '元の姿: ${object.objectCategory}',
                           style: GoogleFonts.shipporiMincho(
                             fontSize: 10,
-                            color: AppColors.boneDim,
+                            color: AppColors.bone.withValues(alpha: 0.72),
                             letterSpacing: 1,
                           ),
                         ),

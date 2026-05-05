@@ -514,7 +514,7 @@ class _TrueNameBlockState extends State<_TrueNameBlock> {
           '※  元 の 姿  ─  ${widget.original}',
           style: GoogleFonts.shipporiMincho(
             fontSize: 11,
-            color: AppColors.boneDim,
+            color: AppColors.bone.withValues(alpha: 0.72),
             letterSpacing: 2,
             fontStyle: FontStyle.italic,
           ),
