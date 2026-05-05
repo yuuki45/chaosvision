@@ -483,6 +483,28 @@ class _Emergence extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        Text(
+          '下 記 の 刻 限 に 観 測 を 行 う と、'
+          ' よ り 高 位 の 神 器 が 顕 現 す る 確 率 が 上 が る。',
+          style: GoogleFonts.shipporiMincho(
+            fontSize: 13,
+            color: AppColors.bone.withValues(alpha: 0.9),
+            height: 1.85,
+            letterSpacing: 1.2,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'During these moments, scans are more likely to yield rare artifacts.',
+          style: GoogleFonts.bodoniModa(
+            fontSize: 10,
+            fontStyle: FontStyle.italic,
+            color: AppColors.goldTarnish,
+            letterSpacing: 0.6,
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 16),
         for (int i = 0; i < _events.length; i++) ...[
           _EventRow(
             label: _events[i].label,
@@ -562,7 +584,7 @@ class _EventRow extends StatelessWidget {
             note,
             style: GoogleFonts.shipporiMincho(
               fontSize: 11,
-              color: AppColors.boneDim,
+              color: AppColors.bone.withValues(alpha: 0.85),
               letterSpacing: 1,
               height: 1.5,
             ),
