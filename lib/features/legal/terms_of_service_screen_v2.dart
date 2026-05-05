@@ -26,9 +26,9 @@ class TermsOfServiceScreenV2 extends StatelessWidget {
             ),
             CodexSubheading('1.2  提供環境'),
             CodexBullets(items: [
-              'iOS 12.0 以上',
+              'iOS 13.0 以上',
               'インターネット接続環境',
-              'カメラ機能',
+              'カメラへのアクセス権限',
             ]),
           ],
         ),
@@ -58,9 +58,11 @@ class TermsOfServiceScreenV2 extends StatelessWidget {
             ]),
             CodexSubheading('3.2  技術的禁止事項'),
             CodexBullets(items: [
-              '本アプリの動作を妨害する行為',
-              '不正なアクセスやハッキング行為',
+              '本アプリおよび中継サーバーの動作を妨害する行為',
+              '不正なアクセス、 リバースエンジニアリング',
+              '自動化ツールによる過剰なリクエスト',
               '本アプリの脆弱性を悪用する行為',
+              'アプリから抽出した認証情報を別用途で利用する行為',
             ]),
           ],
         ),
@@ -84,12 +86,13 @@ class TermsOfServiceScreenV2 extends StatelessWidget {
             CodexSubheading('5.1  サービスの提供'),
             CodexBullets(items: [
               '本アプリの継続的な提供を保証するものではありません',
+              '中継サーバー (Cloudflare) または OpenAI の障害・規約変更により、 AI 解析機能が利用不可となる場合があります',
               '技術的な問題やメンテナンスにより、 一時的にサービスが利用できない場合があります',
             ]),
             CodexSubheading('5.2  生成コンテンツ'),
             CodexBullets(items: [
-              'AI 技術により生成されるコンテンツの正確性を保証するものではありません',
-              '生成されたコンテンツによる損害について責任を負いません',
+              'AI 技術により生成されるコンテンツの正確性・適切性・無害性を保証しません',
+              '生成されたコンテンツによる損害について一切の責任を負いません',
             ]),
           ],
         ),
@@ -115,8 +118,8 @@ class TermsOfServiceScreenV2 extends StatelessWidget {
         ),
         CodexImprint(
           established: '2025  年  8  月  18  日',
-          revised: '2025  年  8  月  18  日',
-          copyright: '©  2025  CHAOS  VISION  ─  All  rights  reserved.',
+          revised: '2026  年  5  月  5  日',
+          copyright: '©  2025 - 2026  CHAOS  VISION  ─  All  rights  reserved.',
         ),
       ],
     );
