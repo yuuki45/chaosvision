@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/share_service.dart';
 import '../../shared/models/scanned_object.dart';
+import '../../core/services/storage_service.dart';
 import '../../shared/widgets/codex/codex_image_frame.dart';
 import '../../shared/widgets/codex/grain_overlay.dart';
 import '../../shared/widgets/codex/kanji_backdrop.dart';
@@ -22,6 +23,17 @@ class ScanResultScreenV2 extends ConsumerStatefulWidget {
 class _ScanResultScreenV2State extends ConsumerState<ScanResultScreenV2> {
   late final Future<String?> _imagePathFuture =
       widget.scannedObject.getFullImagePath();
+  late final ({int position, int total}) _archiveStats = _computeArchiveStats();
+
+  ({int position, int total}) _computeArchiveStats() {
+    final all = StorageService.instance.getAllScannedObjects()
+      ..sort((a, b) => a.scannedAt.compareTo(b.scannedAt));
+    final idx = all.indexWhere((o) => o.id == widget.scannedObject.id);
+    return (
+      position: idx >= 0 ? idx + 1 : all.length,
+      total: all.length,
+    );
+  }
 
   Color get _attribute =>
       AppColors.attributeColors[widget.scannedObject.attribute] ??
@@ -179,6 +191,8 @@ class _ScanResultScreenV2State extends ConsumerState<ScanResultScreenV2> {
                         timestamp: timeStr,
                         aether: obj.aetherDensity,
                         resonance: obj.resonance,
+                        archivePosition: _archiveStats.position,
+                        archiveTotal: _archiveStats.total,
                         accent: _attribute,
                       )
                           .animate()
@@ -713,11 +727,15 @@ class _Readings extends StatelessWidget {
   final String timestamp;
   final double aether;
   final double resonance;
+  final int archivePosition;
+  final int archiveTotal;
   final Color accent;
   const _Readings({
     required this.timestamp,
     required this.aether,
     required this.resonance,
+    required this.archivePosition,
+    required this.archiveTotal,
     required this.accent,
   });
 
@@ -725,6 +743,8 @@ class _Readings extends StatelessWidget {
   Widget build(BuildContext context) {
     final aetherPct = (aether * 100).clamp(0, 100).toInt();
     final resonancePct = (resonance * 100).clamp(0, 100).toInt();
+    final pos = archivePosition.toString().padLeft(3, '0');
+    final tot = archiveTotal.toString().padLeft(3, '0');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -766,7 +786,7 @@ class _Readings extends StatelessWidget {
         const SizedBox(height: 8),
         _row(
           'ARCHIVED',
-          '✦  STORED IN GRIMOIRE',
+          '✦  №.$pos  /  $tot',
           valueColor: AppColors.bloodBright,
         ),
       ],

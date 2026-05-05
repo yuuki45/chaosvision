@@ -23,6 +23,17 @@ class ObjectDetailScreenV2 extends StatefulWidget {
 class _ObjectDetailScreenV2State extends State<ObjectDetailScreenV2> {
   late final Future<String?> _imagePathFuture =
       widget.object.getFullImagePath();
+  late final ({int position, int total}) _archiveStats = _computeArchiveStats();
+
+  ({int position, int total}) _computeArchiveStats() {
+    final all = StorageService.instance.getAllScannedObjects()
+      ..sort((a, b) => a.scannedAt.compareTo(b.scannedAt));
+    final idx = all.indexWhere((o) => o.id == widget.object.id);
+    return (
+      position: idx >= 0 ? idx + 1 : all.length,
+      total: all.length,
+    );
+  }
 
   Color get _attribute =>
       AppColors.attributeColors[widget.object.attribute] ??
@@ -277,6 +288,8 @@ class _ObjectDetailScreenV2State extends State<ObjectDetailScreenV2> {
                         timestamp: timeStr,
                         aether: obj.aetherDensity,
                         resonance: obj.resonance,
+                        archivePosition: _archiveStats.position,
+                        archiveTotal: _archiveStats.total,
                         accent: _attribute,
                       ).animate().fadeIn(duration: 500.ms, delay: 800.ms),
                       const SizedBox(height: 32),
@@ -745,11 +758,15 @@ class _Readings extends StatelessWidget {
   final String timestamp;
   final double aether;
   final double resonance;
+  final int archivePosition;
+  final int archiveTotal;
   final Color accent;
   const _Readings({
     required this.timestamp,
     required this.aether,
     required this.resonance,
+    required this.archivePosition,
+    required this.archiveTotal,
     required this.accent,
   });
 
@@ -757,6 +774,8 @@ class _Readings extends StatelessWidget {
   Widget build(BuildContext context) {
     final aetherPct = (aether * 100).clamp(0, 100).toInt();
     final resonancePct = (resonance * 100).clamp(0, 100).toInt();
+    final pos = archivePosition.toString().padLeft(3, '0');
+    final tot = archiveTotal.toString().padLeft(3, '0');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -796,7 +815,7 @@ class _Readings extends StatelessWidget {
         const SizedBox(height: 8),
         _gauge('RESONANCE', resonancePct, AppColors.goldLeaf),
         const SizedBox(height: 8),
-        _row('STATUS', '✦  ARCHIVED IN GRIMOIRE', AppColors.bloodBright),
+        _row('STATUS', '✦  №.$pos  /  $tot', AppColors.bloodBright),
       ],
     );
   }
