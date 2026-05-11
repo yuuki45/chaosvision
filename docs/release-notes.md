@@ -1,5 +1,60 @@
 # リリースノート
 
+## v1.0.4 (build 3)
+
+### ユーザー向け（App Store "What's New" 用）
+
+#### 日本語版
+
+```
+共有機能の不具合を修正しました。
+
+- 神器カード画像の共有時にエラーで止まってしまう問題を修正
+- いくつかの細かい安定性改善
+```
+
+#### 英語版（参考）
+
+```
+Bug fixes.
+
+- Fixed an error that prevented the codex share card
+  from being generated on release builds
+- Minor stability improvements
+```
+
+---
+
+### 開発者向け内部メモ
+
+**この版で何が変わったか:**
+
+1. **共有機能のクラッシュ修正 (本命)**
+   - 1.0.3 を本番ビルドにすると `共有エラー: 画像生成失敗` で必ず止まっていた
+   - 原因: `share_service.dart` の `_captureCard` が `boundary.debugNeedsPaint`
+     を polling していたが、`debugNeedsPaint` は `assert` 内でしか `late bool`
+     を初期化しないため、release / profile では touching するだけで
+     `LateInitializationError` を投げる
+   - `kDebugMode` でガードして、release / profile では固定 80ms の grace
+     delay にフォールバック
+   - 同時に `_captureCard` の戻り値を `(Uint8List?, String?)` の record に
+     して、捕捉した例外を toast に流す（将来的な regression が
+     「画像生成失敗」一発で握りつぶされないように）
+
+2. **iPad サポート戻し (revert)**
+   - 1.0.3 で `TARGETED_DEVICE_FAMILY` を `"1"` (iPhone only) に変えていたが
+     Apple がアップロード時に "This bundle does not support one or more of
+     the devices supported by the previous app version" でリジェクト
+     (QA1623 — UIDeviceFamily を以前出した版より絞ることは不可)
+   - `"1,2"` に戻して Universal を維持
+   - iPhone のみで運用したい意思は据え置き、新規アプリとして出し直すか
+     iPad UI を破綻させない形でメンテするかは別途検討
+
+**既知の制限 / 未対応事項:**
+- 1.0.3 と同じ (Apple Receipt 検証 / Worker レート制限 / SE は未着手)
+
+---
+
 ## v1.0.3 (build 2)
 
 ### ユーザー向け（App Store "What's New" 用）
