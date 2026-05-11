@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -51,11 +51,12 @@ class ShareService {
       }
 
       debugPrint('ShareService: 3) capturing share card');
-      final pngBytes = await _captureCard(overlay, object, imageBytes);
+      final (pngBytes, captureErr) =
+          await _captureCard(overlay, object, imageBytes);
       debugPrint('ShareService:    png=${pngBytes?.length ?? 0}');
 
       if (pngBytes == null) {
-        _toast(messenger, '共有エラー: 画像生成失敗');
+        _toast(messenger, '共有エラー: ${captureErr ?? "画像生成失敗"}');
         return;
       }
 
@@ -113,7 +114,7 @@ class ShareService {
     return f.readAsBytes();
   }
 
-  static Future<Uint8List?> _captureCard(
+  static Future<(Uint8List?, String?)> _captureCard(
     OverlayState overlay,
     ScannedObject object,
     Uint8List? imageBytes,
@@ -142,6 +143,7 @@ class ShareService {
     overlay.insert(entry);
 
     Uint8List? bytes;
+    String? err;
     try {
       // Allow the overlay to lay out and the image / fonts to settle.
       for (int i = 0; i < 4; i++) {
@@ -152,20 +154,27 @@ class ShareService {
       final ctx = captureKey.currentContext;
       if (ctx == null) {
         debugPrint('ShareService: capture key context null');
-        return null;
+        return (null, 'context null');
       }
       // ignore: use_build_context_synchronously
       final boundary = ctx.findRenderObject() as RenderRepaintBoundary?;
       if (boundary == null) {
         debugPrint('ShareService: boundary not found');
-        return null;
+        return (null, 'boundary null');
       }
 
-      // Wait for paint to flush.
-      int retries = 0;
-      while (boundary.debugNeedsPaint && retries < 8) {
-        await Future<void>.delayed(const Duration(milliseconds: 30));
-        retries++;
+      // Wait for paint to flush. `debugNeedsPaint` is gated by an assert
+      // that gets stripped in release/profile builds — touching it there
+      // throws LateInitializationError. So poll only in debug, and fall
+      // back to a fixed grace delay everywhere else.
+      if (kDebugMode) {
+        int retries = 0;
+        while (boundary.debugNeedsPaint && retries < 8) {
+          await Future<void>.delayed(const Duration(milliseconds: 30));
+          retries++;
+        }
+      } else {
+        await Future<void>.delayed(const Duration(milliseconds: 80));
       }
 
       final image = await boundary.toImage(pixelRatio: 3.0);
@@ -173,13 +182,17 @@ class ShareService {
           await image.toByteData(format: ui.ImageByteFormat.png);
       bytes = byteData?.buffer.asUint8List();
       image.dispose();
+      if (bytes == null) {
+        err = 'byteData null';
+      }
     } catch (e, st) {
       debugPrint('ShareService: capture failed: $e');
       debugPrint('$st');
+      err = e.toString();
     } finally {
       entry.remove();
     }
-    return bytes;
+    return (bytes, err);
   }
 
   static Future<File> _writeTempPng(Uint8List bytes, String objectId) async {
